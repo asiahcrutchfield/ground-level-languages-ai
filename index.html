@@ -1,1 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ground Level Languages</title>
+</head>
+<body>
 
+    <!--
+    ==================================
+    🔠 Vocabulary Stage 🔠
+    ================================== -->
+    <div id="vocab-stage">
+        <!-- 
+        ==================================
+        Picture carousel
+        ================================== -->
+        <ul id="picture-carousel" class="vocab-item-wrapper">
+            <!-- Previous pic -->
+            <li class="carousel-card prev">
+                <div id="picture-frame">
+                    <!-- insert pic here -->
+                    <img src="" alt="" class="carousel-item carousel-pic prev">
+                </div>
+            </li>
+
+            <!-- Active pic -->
+            <li class="carousel-card active">
+                <div id="picture-frame">
+                    <!-- insert pic here -->
+                    <img src="" alt="" class="carousel-item carousel-pic active">
+                </div>
+                <button class="play-btn carousel-play-btn" aria-label="Play">
+                    <span class="play-shape">
+                        <!-- Play button is only visible on active carousel card -->
+                        <!-- Play button -->
+                    </span>
+                </button>
+            </li>
+
+            <!-- Next pic -->
+            <li class="carousel-card next">
+                <div id="picture-frame">
+                    <!-- insert pic here -->
+                    <img src="" alt="" class="carousel-item carousel-pic next">
+                </div>
+            </li>
+        </ul>
+
+        <!-- 
+        ==================================
+        Word breakdown container
+        ================================== -->
+        <div id="breakdown-wrapper">
+            <div id="category-wrapper">
+                <div class="breakdown-category" id="phoneme-category">
+                    <div class="phoneme-frame">
+                        <!-- insert phoneme symbol here -->
+                        <img src="" alt="" class="category-img active" id="phoneme-img">
+                    </div>
+                </div>
+            </div>
+
+            <div id="stage-wrapper">
+                <div class="stage-items-wrapper">
+                    <!-- PHONEME ITEMS -->
+                    <div class="category-items-wrapper phoneme-list-wrapper">
+                        <ul class="category-list phoneme-list vowel-list">
+                            <li class="phoneme-item vowel-item">
+                                <!-- insert vowel symbol here (img, vector, or whatever)-->
+                            </li>
+                        </ul>
+
+                        <ul class="category-list phoneme-list consonant-list">
+                            <li class="phoneme-item consonant-item">
+                                <!-- insert consonant symbol here (img, vector, or whatever)-->
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- TONE ITEMS -->
+                    <ul class="category-list tone-list">
+                        <li class="category-item tone-item">
+                            <!-- insert tone symbol here (img, vector, or whatever)-->
+                        </li>
+                    </ul>
+
+                    <!-- SYLLABLE ITEMS -->
+                    <ul class="category-list syllable-list">
+                        <li class="category-item syllable-item">
+                            <!-- insert syllable symbol here (img, vector, or whatever)-->
+                        </li>
+                    </ul>
+                </div>
+                <div id="breakdown-stage"></div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
