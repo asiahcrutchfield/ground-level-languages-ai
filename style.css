@@ -1,1 +1,475 @@
-/* Vocab stage */
+/* ============================================================
+   Ground Level Languages — Zero-Text Vocabulary Prototype
+   Earthy Botanical Theme
+   ============================================================ */
+
+/* ── Design Tokens ── */
+:root {
+  /* Palette */
+  --bg:            #4A7C59; /* garden green — rich but not harsh */
+  --bg-gradient-a: rgba(82,183,136,0.18);
+  --bg-gradient-b: rgba(45,106,79,0.25);
+  --card-bg:       #EFECE2; /* sandstone — warm contrast against green */
+  --border:        #C2BDA4; /* slightly warmer stone */
+  --primary:       #2D6A4F; /* deep forest green */
+  --active-state:  #2A85A8; /* river teal */
+  --consonant:     #C86D51; /* terracotta */
+  --vowel:         #52B788; /* moss green */
+  --syllable-clr:  #E09F3E; /* ochre amber */
+  --tone-clr:      #2A85A8; /* river teal */
+  --text-hidden:   transparent;
+
+  /* Spacing */
+  --radius-card:   24px;
+  --radius-pill:   999px;
+  --radius-circle: 50%;
+
+  /* Shadows */
+  --shadow-active: 0 8px 32px rgba(45,106,79,0.22), 0 2px 8px rgba(0,0,0,0.10);
+  --shadow-btn:    0 4px 16px rgba(45,106,79,0.30);
+  --shadow-cat:    0 4px 12px rgba(42,133,168,0.20);
+
+  /* Transitions */
+  --ease: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Reset & Base ── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg);
+  color: var(--primary);
+  overflow: hidden; /* single-screen app */
+}
+
+/* NO text anywhere — belt-and-suspenders */
+span:not([aria-hidden]),
+p, h1, h2, h3, label {
+  display: none;
+}
+
+ul {
+  list-style: none;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  padding: 0;
+}
+
+/* ============================================================
+   VOCAB STAGE — full-screen shell
+   ============================================================ */
+#vocab-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 48px;
+  width: 100vw;
+  height: 100vh;
+  padding: 24px;
+  background: var(--bg);
+
+  /* Garden-like layered green depth */
+  background-image:
+    radial-gradient(ellipse at 15% 15%, rgba(255,255,255,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 85%, rgba(45,106,79,0.40) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 0%,  rgba(82,183,136,0.15) 0%, transparent 60%);
+}
+
+/* ============================================================
+   🖼️ PICTURE CAROUSEL
+   ============================================================ */
+#picture-carousel {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 220px;
+  /* Overflow visible so side cards peek in */
+  overflow: visible;
+}
+
+/* ── Carousel Card (shared) ── */
+.carousel-card {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  cursor: pointer;
+  transition:
+    transform 0.45s var(--ease),
+    opacity   0.45s var(--ease-smooth),
+    z-index   0s,
+    box-shadow 0.35s var(--ease-smooth);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ── ACTIVE card ── */
+.carousel-card.active {
+  width:  220px;
+  height: 220px;
+  transform: translateX(0) scale(1);
+  opacity: 1;
+  z-index: 3;
+  border: 2.5px solid var(--primary);
+  box-shadow: var(--shadow-active);
+  border-radius: var(--radius-card);
+  /* Relative so play-btn can be pinned */
+  position: relative;
+}
+
+/* ── PREV card ── */
+.carousel-card.prev {
+  width:  170px;
+  height: 170px;
+  transform: translateX(-170px) scale(0.86);
+  opacity: 0.45;
+  z-index: 1;
+  border: 2px solid var(--border);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* ── NEXT card ── */
+.carousel-card.next {
+  width:  170px;
+  height: 170px;
+  transform: translateX(170px) scale(0.86);
+  opacity: 0.45;
+  z-index: 1;
+  border: 2px solid var(--border);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* ── Picture frame inside card ── */
+.picture-frame {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: inherit;
+  background: var(--card-bg);
+}
+
+.carousel-pic {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  /* SVG data-URI fallback rendered by JS */
+}
+
+/* ── Play button — hidden by default, shown only on active ── */
+.carousel-play-btn {
+  display: none; /* hidden on non-active cards */
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-circle);
+  background: var(--primary);
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-btn);
+  transition: transform 0.2s var(--ease), background 0.2s;
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.carousel-card.active .carousel-play-btn {
+  display: flex; /* show ONLY on active */
+}
+
+.carousel-play-btn:hover {
+  transform: scale(1.12);
+  background: #235840;
+}
+
+.carousel-play-btn:active {
+  transform: scale(0.96);
+}
+
+.carousel-play-btn svg {
+  width: 20px;
+  height: 20px;
+  /* nudge play triangle to look optically centered */
+  margin-left: 2px;
+}
+
+/* Ripple pulse when playing */
+.carousel-play-btn.playing::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: var(--radius-circle);
+  border: 2px solid var(--primary);
+  animation: ripple 0.8s ease-out forwards;
+}
+
+@keyframes ripple {
+  from { opacity: 0.7; transform: scale(0.9); }
+  to   { opacity: 0;   transform: scale(1.6); }
+}
+
+/* ============================================================
+   🔡 BREAKDOWN WRAPPER
+   ============================================================ */
+#breakdown-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  width: 100%;
+  max-width: 560px;
+}
+
+/* ============================================================
+   CATEGORY SWITCHER — 3 circular icon buttons
+   ============================================================ */
+#category-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}
+
+.breakdown-frame.breakdown-category {
+  width:  74px;
+  height: 74px;
+  border-radius: var(--radius-circle);
+  background: rgba(255,255,255,0.60); /* semi-opaque white — PNGs legible */
+  border: 2px solid rgba(255,255,255,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  /* No currentColor needed — using real PNG images */
+  transition:
+    background  0.28s var(--ease-smooth),
+    border      0.28s var(--ease-smooth),
+    box-shadow  0.28s var(--ease-smooth),
+    transform   0.22s var(--ease);
+  user-select: none;
+  overflow: hidden;
+}
+
+/* PNG symbol image inside each category button */
+.category-img {
+  width: 90%;
+  height: 90%;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+  /* Slight brightness lift so the PNGs pop on the coloured button */
+  filter: brightness(1.05);
+  transition: filter 0.2s;
+}
+
+.breakdown-frame.breakdown-category:hover {
+  transform: scale(1.07);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.20);
+  background: rgba(255,255,255,0.80);
+  border-color: rgba(255,255,255,0.90);
+}
+
+.breakdown-frame.breakdown-category.active {
+  background: #FFFFFF; /* fully opaque white for active */
+  border: 2.5px solid var(--active-state);
+  box-shadow: 0 4px 18px rgba(42,133,168,0.35), 0 0 0 4px rgba(42,133,168,0.15);
+  transform: scale(1.07);
+}
+
+.breakdown-frame.breakdown-category.active .category-img {
+  filter: brightness(1.0) saturate(1.1);
+}
+
+/* .category-svg is no longer used — replaced by .category-img PNG images */
+
+/* ============================================================
+   STAGE WRAPPER — horizontal timeline
+   ============================================================ */
+#stage-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 90px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+/* The horizon line */
+#breakdown-stage {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+}
+
+/* Items sit above the line */
+.stage-items-wrapper {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 10px; /* gap above line */
+  min-height: 80px;
+}
+
+/* ── All category lists (hidden by default) ── */
+.category-list {
+  display: none; /* hidden; JS adds .active to show */
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  padding: 0 16px;
+}
+
+.category-list.active {
+  display: flex;
+  animation: fadeSlideUp 0.35s var(--ease-smooth) both;
+}
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Shape items — shared ── */
+.phoneme-item,
+.category-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s var(--ease), filter 0.2s;
+  flex-shrink: 0;
+}
+
+.phoneme-item:hover,
+.category-item:hover {
+  transform: scale(1.18) translateY(-4px);
+  filter: brightness(1.15);
+}
+
+.phoneme-item:active,
+.category-item:active {
+  transform: scale(0.94);
+}
+
+/* Press animation */
+@keyframes itemPop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.3) translateY(-6px); }
+  70%  { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+.phoneme-item.popping,
+.category-item.popping {
+  animation: itemPop 0.4s var(--ease) both;
+}
+
+/* ── CONSONANT: terracotta circle ── */
+.consonant-item svg {
+  width: 34px;
+  height: 34px;
+}
+
+/* ── VOWEL: moss-green triangle ── */
+.vowel-item svg {
+  width: 34px;
+  height: 34px;
+}
+
+/* ── SYLLABLE: ochre amber pill bar ── */
+.syllable-item {
+  height: 28px;
+  min-width: 36px;
+  border-radius: 14px;
+  background: var(--syllable-clr);
+  box-shadow: 0 2px 6px rgba(224,159,62,0.30);
+}
+
+.syllable-item:hover {
+  box-shadow: 0 4px 12px rgba(224,159,62,0.45);
+}
+
+/* ── TONE: river-teal badge ── */
+.tone-item {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-circle);
+  background: var(--tone-clr);
+  box-shadow: 0 2px 8px rgba(42,133,168,0.28);
+  position: relative;
+  overflow: visible;
+}
+
+.tone-item::after {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  border-radius: var(--radius-circle);
+  border: 2.5px solid rgba(255,255,255,0.65);
+}
+
+.tone-item:hover {
+  box-shadow: 0 4px 14px rgba(42,133,168,0.45);
+}
+
+/* ── Tone high: outer ring ── */
+.tone-item.tone-high::before {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border-radius: var(--radius-circle);
+  border: 2px solid rgba(42,133,168,0.35);
+}
+
+/* ── Tone neutral: filled center dot only ── */
+.tone-item.tone-neutral::after {
+  inset: 12px;
+  border: none;
+  background: rgba(255,255,255,0.65);
+  border-radius: var(--radius-circle);
+}
+
+/* ============================================================
+   RESPONSIVE — tablet / smaller screens
+   ============================================================ */
+@media (max-width: 600px) {
+  #vocab-stage { gap: 32px; padding: 16px; }
+
+  .carousel-card.active  { width: 180px; height: 180px; }
+  .carousel-card.prev    { transform: translateX(-140px) scale(0.82); }
+  .carousel-card.next    { transform: translateX(140px)  scale(0.82); }
+
+  .breakdown-frame.breakdown-category {
+    width: 60px;
+    height: 60px;
+  }
+  .category-svg { width: 34px; height: 34px; }
+}

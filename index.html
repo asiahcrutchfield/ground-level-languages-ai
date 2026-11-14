@@ -3,117 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ground Level Languages</title>
+    <title>Ground Level Languages — Zero-Text Vocabulary</title>
+    <meta name="description" content="A zero-text vocabulary prototype for Ground Level Languages, using pictures, phonemes, syllables, and tones.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!--
-    ==================================
-    🔠 Vocabulary Stage 🔠
-    ================================== -->
+    <!-- =============================================
+         🌿 VOCAB STAGE — main app shell
+         ============================================= -->
     <div id="vocab-stage">
-        <!-- 
-        ==================================
-        Picture carousel
-        ================================== -->
-        <ul id="picture-carousel" class="vocab-item-wrapper">
-            <!-- Previous pic -->
-            <li class="carousel-card prev">
-                <div class="picture-frame prev-picture-frame">
-                    <!-- insert pic here -->
-                    <img src="" alt="" class="carousel-item carousel-pic prev">
+
+        <!-- =========================================
+             🖼️ PICTURE CAROUSEL
+             ========================================= -->
+        <ul id="picture-carousel" class="vocab-item-wrapper" aria-label="Vocabulary picture carousel">
+
+            <!-- Previous card -->
+            <li class="carousel-card prev" data-index="2" role="button" tabindex="0" aria-label="Previous word">
+                <div class="picture-frame">
+                    <img src="" alt="" class="carousel-pic">
                 </div>
             </li>
 
-            <!-- Active pic -->
-            <li class="carousel-card active">
-                <div class="picture-frame active-picture-frame">
-                    <!-- insert pic here -->
-                    <img src="" alt="" class="carousel-item carousel-pic active">
+            <!-- Active (center) card -->
+            <li class="carousel-card active" data-index="0" role="button" tabindex="0" aria-label="Current word">
+                <div class="picture-frame">
+                    <img src="" alt="" class="carousel-pic">
                 </div>
-                <button class="play-btn carousel-play-btn" aria-label="Play">
-                    <span class="play-shape">
-                        <!-- Play button is only visible on active carousel card -->
-                        <!-- Play button -->
-                    </span>
+                <button class="carousel-play-btn" aria-label="Play word audio">
+                    <!-- Play triangle rendered purely via CSS/SVG — no text -->
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <polygon points="6,3 20,12 6,21" fill="#F7F4EB"/>
+                    </svg>
                 </button>
             </li>
 
-            <!-- Next pic -->
-            <li class="carousel-card next">
-                <div class="picture-frame next-picture-frame">
-                    <!-- insert pic here -->
-                    <img src="" alt="" class="carousel-item carousel-pic next">
+            <!-- Next card -->
+            <li class="carousel-card next" data-index="1" role="button" tabindex="0" aria-label="Next word">
+                <div class="picture-frame">
+                    <img src="" alt="" class="carousel-pic">
                 </div>
             </li>
-        </ul>
 
-        <!-- 
-        ==================================
-        Word breakdown container
-        ================================== -->
+        </ul><!-- /#picture-carousel -->
+
+
+        <!-- =========================================
+             🔡 WORD BREAKDOWN CONTAINER
+             ========================================= -->
         <div id="breakdown-wrapper">
-            <div id="category-wrapper">
-                <div class="breakdown-frame breakdown-category active" id="phoneme-frame phoneme-category">
-                    <!-- insert phoneme symbol here -->
-                    <img src="" alt="" class="category-img" id="phoneme-img">
+
+            <!-- ── Category switcher circles ── -->
+            <div id="category-wrapper" role="tablist" aria-label="Breakdown category">
+
+                <!-- Phonemes button -->
+                <div class="breakdown-frame breakdown-category active"
+                     id="phoneme-category"
+                     role="tab"
+                     tabindex="0"
+                     aria-selected="true"
+                     aria-controls="phoneme-panel"
+                     data-category="phoneme"
+                     title="Phonemes">
+                    <img src="images/symbols/phonemes_transparent.png" alt="" class="category-img" aria-hidden="true">
                 </div>
 
-                <div class="breakdown-frame breakdown-category" id="syllable-frame syllable-category">
-                    <!-- insert syllable symbol here -->
-                    <img src="" alt="" class="category-img" id="syllable-img">
+                <!-- Syllables button -->
+                <div class="breakdown-frame breakdown-category"
+                     id="syllable-category"
+                     role="tab"
+                     tabindex="0"
+                     aria-selected="false"
+                     aria-controls="syllable-panel"
+                     data-category="syllable"
+                     title="Syllables">
+                    <img src="images/symbols/syllables_transparent.png" alt="" class="category-img" aria-hidden="true">
                 </div>
 
-                <div class="breakdown-frame breakdown-category" id="tone-frame tone-category">
-                    <!-- insert tone symbol here -->
-                    <img src="" alt="" class="category-img" id="tone-img">
+                <!-- Tone button -->
+                <div class="breakdown-frame breakdown-category"
+                     id="tone-category"
+                     role="tab"
+                     tabindex="0"
+                     aria-selected="false"
+                     aria-controls="tone-panel"
+                     data-category="tone"
+                     title="Tones">
+                    <img src="images/symbols/tones_transparent.png" alt="" class="category-img" aria-hidden="true">
                 </div>
-            </div>
 
+            </div><!-- /#category-wrapper -->
+
+
+            <!-- ── Stage: horizontal timeline with shapes ── -->
             <div id="stage-wrapper">
                 <div class="stage-items-wrapper">
-                    <!-- PHONEME ITEMS -->
-                    <div class="category-items-wrapper phoneme-list-wrapper">
-                        <ul class="category-list phoneme-list all-phonemes-list active">
-                            <li class="phoneme-item vowel-item">
-                                <!-- insert vowel symbol here (img, vector, or whatever)-->
-                            </li>
-                            <li class="phoneme-item consonant-item">
-                                <!-- insert consonant symbol here (img, vector, or whatever)-->
-                            </li>
-                        </ul>
 
-                        <ul class="category-list phoneme-list vowel-list">
-                            <li class="phoneme-item vowel-item">
-                                <!-- insert vowel symbol here (img, vector, or whatever)-->
-                            </li>
-                        </ul>
-
-                        <ul class="category-list phoneme-list consonant-list">
-                            <li class="phoneme-item consonant-item">
-                                <!-- insert consonant symbol here (img, vector, or whatever)-->
-                            </li>
-                        </ul>
-                    </div>
-
-                    <!-- TONE ITEMS -->
-                    <ul class="category-list tone-list">
-                        <li class="category-item tone-item">
-                            <!-- insert tone symbol here (img, vector, or whatever)-->
-                        </li>
+                    <!-- PHONEME PANEL -->
+                    <ul class="category-list all-phonemes-list active"
+                        id="phoneme-panel"
+                        role="tabpanel"
+                        aria-labelledby="phoneme-category">
+                        <!-- Items injected by script.js -->
                     </ul>
 
-                    <!-- SYLLABLE ITEMS -->
-                    <ul class="category-list syllable-list">
-                        <li class="category-item syllable-item">
-                            <!-- insert syllable symbol here (img, vector, or whatever)-->
-                        </li>
+                    <!-- SYLLABLE PANEL -->
+                    <ul class="category-list syllable-list"
+                        id="syllable-panel"
+                        role="tabpanel"
+                        aria-labelledby="syllable-category">
+                        <!-- Items injected by script.js -->
                     </ul>
-                </div>
+
+                    <!-- TONE PANEL -->
+                    <ul class="category-list tone-list"
+                        id="tone-panel"
+                        role="tabpanel"
+                        aria-labelledby="tone-category">
+                        <!-- Items injected by script.js -->
+                    </ul>
+
+                </div><!-- /.stage-items-wrapper -->
+
+                <!-- The horizon line -->
                 <div id="breakdown-stage"></div>
-            </div>
-        </div>
-    </div>
 
+            </div><!-- /#stage-wrapper -->
+
+        </div><!-- /#breakdown-wrapper -->
+
+    </div><!-- /#vocab-stage -->
+
+    <script src="script.js" defer></script>
 </body>
 </html>
