@@ -8,14 +8,24 @@
       "phonemes": [
         {
           "id": "cat_p1",
-          "kind": "vowel",
+          "kind": "consonant",
           "audio_url": "audio/slices/cat_p1.wav"
+        },
+        {
+          "id": "cat_p2",
+          "kind": "vowel",
+          "audio_url": "audio/slices/cat_p2.wav"
+        },
+        {
+          "id": "cat_p3",
+          "kind": "consonant",
+          "audio_url": "audio/slices/cat_p3.wav"
         }
       ],
       "syllables": [
         {
           "id": "cat_s1",
-          "width_px": 100,
+          "width_px": 120,
           "audio_url": "audio/slices/cat_s1.wav"
         }
       ],
@@ -37,12 +47,22 @@
           "id": "dog_p1",
           "kind": "vowel",
           "audio_url": "audio/slices/dog_p1.wav"
+        },
+        {
+          "id": "dog_p2",
+          "kind": "consonant",
+          "audio_url": "audio/slices/dog_p2.wav"
+        },
+        {
+          "id": "dog_p3",
+          "kind": "vowel",
+          "audio_url": "audio/slices/dog_p3.wav"
         }
       ],
       "syllables": [
         {
           "id": "dog_s1",
-          "width_px": 170,
+          "width_px": 180,
           "audio_url": "audio/slices/dog_s1.wav"
         }
       ],
@@ -64,17 +84,12 @@
           "id": "walk_p1",
           "kind": "consonant",
           "audio_url": "audio/slices/walk_p1.wav"
-        },
-        {
-          "id": "walk_p2",
-          "kind": "vowel",
-          "audio_url": "audio/slices/walk_p2.wav"
         }
       ],
       "syllables": [
         {
           "id": "walk_s1",
-          "width_px": 127,
+          "width_px": 136,
           "audio_url": "audio/slices/walk_s1.wav"
         }
       ],
@@ -146,19 +161,14 @@
         },
         {
           "id": "tree_p2",
-          "kind": "consonant",
-          "audio_url": "audio/slices/tree_p2.wav"
-        },
-        {
-          "id": "tree_p3",
           "kind": "vowel",
-          "audio_url": "audio/slices/tree_p3.wav"
+          "audio_url": "audio/slices/tree_p2.wav"
         }
       ],
       "syllables": [
         {
           "id": "tree_s1",
-          "width_px": 96,
+          "width_px": 115,
           "audio_url": "audio/slices/tree_s1.wav"
         }
       ],
