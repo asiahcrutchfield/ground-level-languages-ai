@@ -19,7 +19,7 @@
         <ul id="picture-carousel" class="vocab-item-wrapper">
             <!-- Previous pic -->
             <li class="carousel-card prev">
-                <div id="picture-frame">
+                <div class="picture-frame prev-picture-frame">
                     <!-- insert pic here -->
                     <img src="" alt="" class="carousel-item carousel-pic prev">
                 </div>
@@ -27,7 +27,7 @@
 
             <!-- Active pic -->
             <li class="carousel-card active">
-                <div id="picture-frame">
+                <div class="picture-frame active-picture-frame">
                     <!-- insert pic here -->
                     <img src="" alt="" class="carousel-item carousel-pic active">
                 </div>
@@ -41,7 +41,7 @@
 
             <!-- Next pic -->
             <li class="carousel-card next">
-                <div id="picture-frame">
+                <div class="picture-frame next-picture-frame">
                     <!-- insert pic here -->
                     <img src="" alt="" class="carousel-item carousel-pic next">
                 </div>
@@ -54,11 +54,19 @@
         ================================== -->
         <div id="breakdown-wrapper">
             <div id="category-wrapper">
-                <div class="breakdown-category" id="phoneme-category">
-                    <div class="phoneme-frame">
-                        <!-- insert phoneme symbol here -->
-                        <img src="" alt="" class="category-img active" id="phoneme-img">
-                    </div>
+                <div class="breakdown-frame breakdown-category active" id="phoneme-frame phoneme-category">
+                    <!-- insert phoneme symbol here -->
+                    <img src="" alt="" class="category-img" id="phoneme-img">
+                </div>
+
+                <div class="breakdown-frame breakdown-category" id="syllable-frame syllable-category">
+                    <!-- insert syllable symbol here -->
+                    <img src="" alt="" class="category-img" id="syllable-img">
+                </div>
+
+                <div class="breakdown-frame breakdown-category" id="tone-frame tone-category">
+                    <!-- insert tone symbol here -->
+                    <img src="" alt="" class="category-img" id="tone-img">
                 </div>
             </div>
 
@@ -66,6 +74,15 @@
                 <div class="stage-items-wrapper">
                     <!-- PHONEME ITEMS -->
                     <div class="category-items-wrapper phoneme-list-wrapper">
+                        <ul class="category-list phoneme-list all-phonemes-list active">
+                            <li class="phoneme-item vowel-item">
+                                <!-- insert vowel symbol here (img, vector, or whatever)-->
+                            </li>
+                            <li class="phoneme-item consonant-item">
+                                <!-- insert consonant symbol here (img, vector, or whatever)-->
+                            </li>
+                        </ul>
+
                         <ul class="category-list phoneme-list vowel-list">
                             <li class="phoneme-item vowel-item">
                                 <!-- insert vowel symbol here (img, vector, or whatever)-->
