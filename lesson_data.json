@@ -1,3 +1,90 @@
 {
-  "items": []
+  "items": [
+    {
+      "id": "cat",
+      "visual_url": "images/visuals/cat.jpg",
+      "full_audio_url": "audio/cat.mp3",
+      "humming_audio_url": "audio/slices/cat_hum.wav",
+      "phonemes": [
+        { "id": "cat_p1", "kind": "consonant", "audio_url": "audio/phonemes/k.wav" },
+        { "id": "cat_p2", "kind": "vowel",     "audio_url": "audio/slices/cat_p2.wav" },
+        { "id": "cat_p3", "kind": "consonant", "audio_url": "audio/phonemes/t.wav" }
+      ],
+      "syllables": [
+        { "id": "cat_s1", "width_px": 100, "audio_url": "audio/slices/cat_s1.wav" }
+      ],
+      "tones": [
+        { "id": "cat_t1", "style": "ring", "audio_url": "audio/slices/cat_hum.wav" }
+      ]
+    },
+    {
+      "id": "dog",
+      "visual_url": "images/visuals/dog.jpg",
+      "full_audio_url": "audio/dog.mp3",
+      "humming_audio_url": "audio/slices/dog_hum.wav",
+      "phonemes": [
+        { "id": "dog_p1", "kind": "consonant", "audio_url": "audio/phonemes/d.wav" },
+        { "id": "dog_p2", "kind": "vowel",     "audio_url": "audio/slices/dog_p2.wav" },
+        { "id": "dog_p3", "kind": "consonant", "audio_url": "audio/phonemes/g.wav" }
+      ],
+      "syllables": [
+        { "id": "dog_s1", "width_px": 110, "audio_url": "audio/slices/dog_s1.wav" }
+      ],
+      "tones": [
+        { "id": "dog_t1", "style": "ring", "audio_url": "audio/slices/dog_hum.wav" }
+      ]
+    },
+    {
+      "id": "walk",
+      "visual_url": "images/visuals/walk.gif",
+      "full_audio_url": "audio/walk.mp3",
+      "humming_audio_url": "audio/slices/walk_hum.wav",
+      "phonemes": [
+        { "id": "walk_p1", "kind": "consonant", "audio_url": "audio/phonemes/w.wav" },
+        { "id": "walk_p2", "kind": "vowel",     "audio_url": "audio/phonemes/ao.wav" }
+      ],
+      "syllables": [
+        { "id": "walk_s1", "width_px": 127, "audio_url": "audio/slices/walk_s1.wav" }
+      ],
+      "tones": [
+        { "id": "walk_t1", "style": "ring", "audio_url": "audio/slices/walk_hum.wav" }
+      ]
+    },
+    {
+      "id": "jump",
+      "visual_url": "images/visuals/jump.gif",
+      "full_audio_url": "audio/jump.mp3",
+      "humming_audio_url": "audio/slices/jump_hum.wav",
+      "phonemes": [
+        { "id": "jump_p1", "kind": "consonant", "audio_url": "audio/slices/jump_p1.wav" },
+        { "id": "jump_p2", "kind": "vowel",     "audio_url": "audio/slices/jump_p2.wav" },
+        { "id": "jump_p3", "kind": "consonant", "audio_url": "audio/slices/jump_p3.wav" },
+        { "id": "jump_p4", "kind": "consonant", "audio_url": "audio/slices/jump_p4.wav" },
+        { "id": "jump_p5", "kind": "vowel",     "audio_url": "audio/slices/jump_p5.wav" }
+      ],
+      "syllables": [
+        { "id": "jump_s1", "width_px": 180, "audio_url": "audio/slices/jump_s1.wav" }
+      ],
+      "tones": [
+        { "id": "jump_t1", "style": "ring", "audio_url": "audio/slices/jump_hum.wav" }
+      ]
+    },
+    {
+      "id": "tree",
+      "visual_url": "images/visuals/tree.jpg",
+      "full_audio_url": "audio/tree.mp3",
+      "humming_audio_url": "audio/slices/tree_hum.wav",
+      "phonemes": [
+        { "id": "tree_p1", "kind": "consonant", "audio_url": "audio/phonemes/t.wav" },
+        { "id": "tree_p2", "kind": "consonant", "audio_url": "audio/slices/tree_p2.wav" },
+        { "id": "tree_p3", "kind": "vowel",     "audio_url": "audio/slices/tree_p3.wav" }
+      ],
+      "syllables": [
+        { "id": "tree_s1", "width_px": 96, "audio_url": "audio/slices/tree_s1.wav" }
+      ],
+      "tones": [
+        { "id": "tree_t1", "style": "ring", "audio_url": "audio/slices/tree_hum.wav" }
+      ]
+    }
+  ]
 }
