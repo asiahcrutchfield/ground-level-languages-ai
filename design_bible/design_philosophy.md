@@ -36,9 +36,20 @@ To keep cognitive load low and avoid the anxiety of gamified language apps, the 
 ---
 
 ## 4. Interaction & Sensory Rules
-1. **Audio-First Exposure:** Learners always hear the native audio clip simultaneously with visual reveal—never seeing an unvoiced image or label first.
+1. **Audio-First Exposure:** Learners always hear the native audio clip simultaneously with visual reveal on their first encounter—never seeing an unvoiced image or label first. 
 2. **Concrete Sensory Primacy:** All Level 0 visuals represent unambiguous physical objects, actions, states, or spatial relationships (photos, minimalist vectors, or looping GIFs) grounded in an animal perspective. Abstract concepts are excluded.
 3. **Curiosity-Driven Progressive Reveal:**
    - **Story Preview Carousel:** Upcoming narrative scenes are initially veiled behind translucent botanical obscurers to spark curiosity without spoiling the story arc.
    - **Vocabulary Primer:** Core concrete anchors are primed via direct audio-visual coupling and interactive phoneme/syllable/hum breakdowns before full story playback.
 4. **2-Choice Low-Pressure Diagnostics:** Auditory discrimination and L1 filter profiling rely on binary (2-choice) audio/visual selections that measure accuracy and response latency silently in the background to adapt future ear-training drills.
+
+---
+
+## 5. Symbols & Pre-Technological Universality
+1. **The "Uncontacted Tribe" Standard (Where Practical):** Where practical, every symbol and icon in the interface must be immediately intuitive to a human being with zero exposure to modern technology, writing systems, or cultural idioms (aiming for at least 75% intuitive comprehension without instruction). Hardware metaphors (microphones, speakers, gears, cassette-style play/pause buttons) and linguistic puns (e.g., an anatomical *back* for a *return* button) should be avoided as much as possible.
+2. **Biological & Physical Anchors:** Priority must be given to symbols grounded exclusively in universal human anatomy, sensory organs, or raw physical motion:
+   - **Listening / Audio Input:** A human **ear** (universally understood as receiving sound).
+   - **Speaking / Vocal Output:** An **open mouth** or **human face profile emitting breath/waves** (universally understood as producing voice—avoiding microphones).
+   - **Visibility / Reveal:** An open or closed **eye** (universally understood as seeing or hiding).
+   - **Movement / Progression:** Natural **footsteps**, a **pointing hand**, or simple **spatial paths** indicating direction without text or UI chrome.
+3. **Strict Exception Clause:** Conventional UI icons or abstract geometric markers are permitted *only* when a concept has no practical biological or physical representation (such as abstract acoustic category distinctions), and must still rely on direct visual affordance rather than text or cultural knowledge.

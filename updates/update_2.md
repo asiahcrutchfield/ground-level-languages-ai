@@ -27,12 +27,15 @@
 
 ## Task Divisions
 ### Moa
-
+Moa will be out of the country until next Wednesday (11/25) so she can give feedback and suggest designs for the UI.
 
 ### Yuka
-
+- Build the Story Preview Carousel and Side-by-Side Review layout in HTML/CSS.
 
 ### Aziz
-
+- Build the 2-choice hearing test and review replay logic in `script.js`.
+- Add the visual highlight pulse on diverged phoneme shapes (`●` / `▲`).
 
 ### Asiah
+- Upgrade `gll_intro_to_ai.ipynb` to use `MMS_FA` forced alignment for cleaner phoneme audio slices.
+- Set up sub-word pronunciation comparison (`Wav2Vec2`) in Colab and export updated `lesson_data.json` files.
