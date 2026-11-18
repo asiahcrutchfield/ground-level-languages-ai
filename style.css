@@ -495,3 +495,564 @@ button {
   }
   .category-svg { width: 34px; height: 34px; }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ============================================================
+   UPDATE #2: MODE SWITCHER, STORY CAROUSEL & SIDE-BY-SIDE REVIEW
+   ============================================================ */
+
+/* ── Additional Tokens for Diagnostic Feedback ── */
+:root {
+  --diverged-clr:  #E07A5F; /* warm botanical coral-amber alert */
+  --diverged-glow: rgba(224, 122, 95, 0.45);
+  --veil-bg:       rgba(239, 236, 226, 0.62);
+}
+
+/* ── Shared Stage Shell (matches #vocab-stage) ── */
+.app-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  width: 100vw;
+  height: 100vh;
+  padding: 76px 24px 24px;
+  background: var(--bg);
+  background-image:
+    radial-gradient(ellipse at 15% 15%, rgba(255,255,255,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 85%, rgba(45,106,79,0.40) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 0%,  rgba(82,183,136,0.15) 0%, transparent 60%);
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* ============================================================
+   🧭 TOP MODE NAVIGATION (Zero-Text Pill)
+   ============================================================ */
+#mode-nav {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 10px;
+  border-radius: var(--radius-pill);
+  background: rgba(45, 106, 79, 0.45);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+}
+
+.mode-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-circle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(247, 244, 235, 0.78);
+  transition: all 0.25s var(--ease);
+}
+
+.mode-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.mode-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #FFFFFF;
+  transform: scale(1.06);
+}
+
+.mode-btn.active {
+  background: var(--card-bg);
+  color: var(--primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
+}
+
+/* ============================================================
+   📖 STORY PREVIEW CAROUSEL (Progressive Reveal & Veiled Cards)
+   ============================================================ */
+.story-carousel-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 250px;
+  overflow: visible;
+}
+
+.story-card {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  cursor: pointer;
+  transition:
+    transform 0.45s var(--ease),
+    opacity   0.45s var(--ease-smooth),
+    box-shadow 0.35s var(--ease-smooth);
+  user-select: none;
+}
+
+.story-card.active {
+  position: relative;
+  width: 240px;
+  height: 240px;
+  transform: translateX(0) scale(1);
+  opacity: 1;
+  z-index: 3;
+  border: 2.5px solid var(--primary);
+  box-shadow: var(--shadow-active);
+}
+
+.story-card.prev {
+  width: 180px;
+  height: 180px;
+  transform: translateX(-185px) scale(0.86);
+  opacity: 0.55;
+  z-index: 1;
+  border: 2px solid var(--border);
+}
+
+.story-card.next {
+  width: 180px;
+  height: 180px;
+  transform: translateX(185px) scale(0.86);
+  opacity: 0.55;
+  z-index: 1;
+  border: 2px solid var(--border);
+}
+
+.story-pic {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: filter 0.5s var(--ease-smooth), transform 0.5s var(--ease-smooth);
+}
+
+/* ── Veiled & Locked Progressive-Reveal States ── */
+.story-veil {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--veil-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--primary);
+  transition: opacity 0.45s var(--ease-smooth), backdrop-filter 0.45s var(--ease-smooth);
+  z-index: 2;
+}
+
+.veil-icon {
+  width: 44px;
+  height: 44px;
+  opacity: 0.85;
+  transition: transform 0.35s var(--ease);
+}
+
+/* Unlocked: veil disappears cleanly */
+.story-card.unlocked .story-veil {
+  opacity: 0;
+  pointer-events: none;
+  backdrop-filter: blur(0px);
+}
+
+/* Veiled Teaser: soft blur + pulsing curiosity emblem on hover */
+.story-card.veiled .story-pic {
+  filter: blur(8px) saturate(0.85);
+  transform: scale(1.08);
+}
+
+.story-card.veiled:hover .veil-icon {
+  transform: scale(1.12) rotate(12deg);
+}
+
+/* Locked: deeper botanical mist */
+.story-card.locked .story-veil {
+  background: rgba(45, 106, 79, 0.72);
+  color: var(--card-bg);
+  backdrop-filter: blur(16px);
+}
+
+.story-card.locked .story-pic {
+  filter: blur(14px) grayscale(0.6);
+}
+
+/* Play / Primer trigger on active story card */
+.story-card.active .story-action-btn {
+  display: flex;
+  z-index: 5;
+}
+
+/* ── Story Progression Arc (Preview → Primer → Audio Story) ── */
+.story-arc-tracker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 12px 24px;
+  border-radius: var(--radius-pill);
+  background: rgba(239, 236, 226, 0.16);
+  border: 1.5px solid rgba(239, 236, 226, 0.25);
+}
+
+.arc-node {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-circle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(239, 236, 226, 0.25);
+  color: rgba(247, 244, 235, 0.65);
+  transition: all 0.3s var(--ease);
+}
+
+.arc-node svg {
+  width: 20px;
+  height: 20px;
+}
+
+.arc-node.completed {
+  background: var(--vowel);
+  color: #FFFFFF;
+}
+
+.arc-node.current {
+  background: var(--card-bg);
+  color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(239, 236, 226, 0.3);
+  transform: scale(1.1);
+}
+
+.arc-connector {
+  width: 44px;
+  height: 3px;
+  background: rgba(239, 236, 226, 0.25);
+}
+
+.arc-connector.active {
+  background: var(--vowel);
+}
+
+/* ============================================================
+   ⚖️ SIDE-BY-SIDE REVIEW LAYOUT
+   ============================================================ */
+.review-visual-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.review-thumb-frame {
+  width: 96px;
+  height: 96px;
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--card-bg);
+  border: 2.5px solid var(--primary);
+  box-shadow: var(--shadow-active);
+}
+
+.review-thumb-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.review-compare-btn {
+  width: 46px;
+  height: 46px;
+  border-radius: var(--radius-circle);
+  background: var(--card-bg);
+  color: var(--primary);
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transition: transform 0.2s var(--ease), background 0.2s;
+}
+
+.review-compare-btn svg {
+  width: 22px;
+  height: 22px;
+  transform: rotate(90deg); /* horizontal swap/compare arrows */
+}
+
+.review-compare-btn:hover {
+  transform: scale(1.1);
+  background: #FFFFFF;
+}
+
+/* ── 2-Column Side-by-Side Grid ── */
+.review-comparison-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: stretch;
+  gap: 20px;
+  width: 100%;
+  max-width: 780px;
+}
+
+.review-pane {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 28px;
+  padding: 24px;
+  border-radius: var(--radius-card);
+  background: var(--card-bg);
+  border: 2.5px solid var(--border);
+  box-shadow: var(--shadow-active);
+  min-height: 210px;
+  transition: border-color 0.3s var(--ease-smooth), transform 0.3s var(--ease);
+}
+
+.review-pane.target-pane {
+  border-color: var(--primary);
+}
+
+.review-pane.learner-pane {
+  border-color: var(--consonant);
+}
+
+/* Active audio playback highlight on pane */
+.review-pane.is-playing {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(42, 133, 168, 0.28);
+  border-color: var(--active-state);
+}
+
+/* ── Pane Top Row: Emblem + Play Button ── */
+.pane-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pane-emblem {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-circle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(45, 106, 79, 0.10);
+  color: var(--primary);
+}
+
+.learner-emblem {
+  background: rgba(200, 109, 81, 0.12);
+  color: var(--consonant);
+}
+
+.pane-emblem svg {
+  width: 24px;
+  height: 24px;
+}
+
+.pane-symbol-img {
+  width: 76%;
+  height: 76%;
+  object-fit: contain;
+}
+
+.review-play-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-circle);
+  background: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-btn);
+  transition: transform 0.2s var(--ease), background 0.2s;
+}
+
+.review-play-btn.learner-play {
+  background: var(--consonant);
+  box-shadow: 0 4px 16px rgba(200, 109, 81, 0.32);
+}
+
+.review-play-btn:hover {
+  transform: scale(1.1);
+}
+
+.review-play-btn:active {
+  transform: scale(0.95);
+}
+
+.review-play-btn svg {
+  width: 18px;
+  height: 18px;
+  margin-left: 2px;
+}
+
+/* ── Timeline inside Review Pane ── */
+.review-timeline-wrapper {
+  position: relative;
+  width: 100%;
+  padding-bottom: 12px;
+}
+
+.review-phoneme-list {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 16px;
+  min-height: 46px;
+}
+
+.review-horizon-line {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+}
+
+/* ── Center Bridge Divider ── */
+.review-bridge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--card-bg);
+}
+
+.bridge-line {
+  width: 2px;
+  flex: 1;
+  background: rgba(239, 236, 226, 0.35);
+  border-radius: 2px;
+}
+
+.bridge-node {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-circle);
+  background: rgba(239, 236, 226, 0.22);
+  border: 1.5px solid rgba(239, 236, 226, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bridge-node svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* ============================================================
+   🎯 SUB-WORD DIVERGED PHONEME PULSE (For Task B Integration)
+   Highlights exact diverged ● / ▲ shape without any text
+   ============================================================ */
+.phoneme-item.diverged,
+.category-item.diverged {
+  position: relative;
+  z-index: 2;
+  animation: divergedFloat 1.8s var(--ease-smooth) infinite;
+}
+
+.phoneme-item.diverged::before,
+.category-item.diverged::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: var(--radius-circle);
+  border: 2.5px solid var(--diverged-clr);
+  background: radial-gradient(circle, var(--diverged-glow) 0%, transparent 70%);
+  animation: divergedPulse 1.8s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes divergedPulse {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.95;
+  }
+  70% {
+    transform: scale(1.38);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.38);
+    opacity: 0;
+  }
+}
+
+@keyframes divergedFloat {
+  0%, 100% { transform: translateY(0) scale(1.06); }
+  50%      { transform: translateY(-4px) scale(1.12); }
+}
+
+/* ============================================================
+   📱 RESPONSIVE — Narrow / Mobile Viewports
+   ============================================================ */
+@media (max-width: 680px) {
+  .app-stage {
+    gap: 24px;
+    padding-top: 72px;
+  }
+
+  .story-card.active { width: 190px; height: 190px; }
+  .story-card.prev   { transform: translateX(-140px) scale(0.82); }
+  .story-card.next   { transform: translateX(140px) scale(0.82); }
+
+  .review-comparison-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    max-width: 380px;
+  }
+
+  .review-bridge {
+    flex-direction: row;
+    height: 28px;
+  }
+
+  .bridge-line {
+    width: auto;
+    height: 2px;
+  }
+
+  .review-pane {
+    padding: 16px 20px;
+    min-height: 150px;
+    gap: 16px;
+  }
+}
