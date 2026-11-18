@@ -80,8 +80,9 @@ button {
   gap: 14px;
   padding: 6px 14px;
   border-radius: var(--radius-pill);
-  background: rgba(239, 236, 226, 0.85);
+  background: rgba(239, 236, 226, 0.88);
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1.5px solid rgba(194, 189, 164, 0.8);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
@@ -148,7 +149,7 @@ button {
 }
 
 /* ============================================================
-   🖼️ PICTURE CAROUSEL
+   PICTURE CAROUSEL
    ============================================================ */
 #picture-carousel {
   position: relative;
@@ -275,7 +276,7 @@ button {
 }
 
 /* ============================================================
-   🔡 BREAKDOWN WRAPPER
+   BREAKDOWN WRAPPER
    ============================================================ */
 #breakdown-wrapper {
   display: flex;
@@ -347,7 +348,8 @@ button {
   transform: scale(1.07);
 }
 
-.breakdown-frame.breakdown-category.active .category-svg {
+.breakdown-frame.breakdown-category.active .category-svg,
+.breakdown-frame.breakdown-category.active .category-img {
   transform: scale(1.04);
 }
 
@@ -506,7 +508,7 @@ button {
 
 
 /* ============================================================
-   📖 STAGE 1: STORY PREVIEW CAROUSEL (Progressive Reveal)
+   STAGE 1: STORY PREVIEW CAROUSEL (Progressive Reveal)
    ============================================================ */
 #story-stage {
   gap: 28px;
@@ -534,6 +536,7 @@ button {
     opacity   0.45s var(--ease-smooth),
     box-shadow 0.35s var(--ease-smooth);
   user-select: none;
+  -webkit-user-select: none;
 }
 
 .story-card.active {
@@ -551,7 +554,7 @@ button {
   width: 205px;
   height: 205px;
   transform: translateX(-200px) scale(0.86);
-  opacity: 0.75;
+  opacity: 0.78;
   z-index: 1;
   border: 2px solid var(--border);
 }
@@ -560,9 +563,19 @@ button {
   width: 205px;
   height: 205px;
   transform: translateX(200px) scale(0.86);
-  opacity: 0.75;
+  opacity: 0.78;
   z-index: 1;
   border: 2px solid var(--border);
+}
+
+.story-card.prev:hover {
+  transform: translateX(-200px) scale(0.91);
+  opacity: 0.92;
+}
+
+.story-card.next:hover {
+  transform: translateX(200px) scale(0.91);
+  opacity: 0.92;
 }
 
 .story-frame {
@@ -672,7 +685,7 @@ button {
 
 
 /* ============================================================
-   🔍 STAGE 3: SIDE-BY-SIDE REVIEW LAYOUT (Sub-Word Localization)
+   STAGE 3: SIDE-BY-SIDE REVIEW LAYOUT (Sub-Word Localization)
    ============================================================ */
 #review-stage {
   gap: 24px;
@@ -706,17 +719,18 @@ button {
   width: 42px;
   height: 42px;
   border-radius: var(--radius-circle);
-  background: rgba(239, 236, 226, 0.85);
+  background: rgba(239, 236, 226, 0.88);
   color: var(--primary);
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
-  transition: transform 0.2s var(--ease);
+  transition: transform 0.2s var(--ease), background 0.2s;
 }
 
 .review-nav-arrow:hover {
   transform: scale(1.1);
+  background: #FFFFFF;
 }
 
 .review-nav-arrow svg {
@@ -748,6 +762,15 @@ button {
   align-items: center;
   gap: 20px;
   box-shadow: var(--shadow-active);
+  transition: transform 0.25s var(--ease-smooth);
+}
+
+.review-card.learner-card {
+  border-top: 5px solid var(--consonant);
+}
+
+.review-card.target-card {
+  border-top: 5px solid var(--primary);
 }
 
 .review-role-badge {
@@ -782,7 +805,7 @@ button {
 .review-timeline-box {
   position: relative;
   width: 100%;
-  min-height: 62px;
+  min-height: 64px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -804,13 +827,14 @@ button {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  gap: 14px;
+  gap: 16px;
 }
 
-/* Diverged Phoneme Pulsing Botanical Highlight */
+/* Diverged Phoneme Pulsing Botanical Highlight (● / ▲) */
 .phoneme-item.diverged {
   position: relative;
-  transform: translateY(-4px) scale(1.12);
+  transform: translateY(-4px) scale(1.14);
+  filter: drop-shadow(0 0 8px rgba(200, 109, 81, 0.55));
 }
 
 .phoneme-item.diverged::after {
@@ -826,7 +850,8 @@ button {
 /* Corresponding Target Reference Highlight */
 .phoneme-item.target-highlight {
   position: relative;
-  transform: translateY(-4px) scale(1.12);
+  transform: translateY(-4px) scale(1.14);
+  filter: drop-shadow(0 0 8px rgba(42, 133, 168, 0.45));
 }
 
 .phoneme-item.target-highlight::after {
@@ -840,8 +865,8 @@ button {
 
 @keyframes divergePulse {
   0%   { transform: scale(0.92); opacity: 0.95; }
-  70%  { transform: scale(1.38); opacity: 0; }
-  100% { transform: scale(1.38); opacity: 0; }
+  70%  { transform: scale(1.42); opacity: 0; }
+  100% { transform: scale(1.42); opacity: 0; }
 }
 
 .review-play-btn {
@@ -908,7 +933,8 @@ button {
     width: 60px;
     height: 60px;
   }
-  .category-svg { width: 34px; height: 34px; }
+  .category-svg,
+  .category-img { width: 34px; height: 34px; }
 
   .review-comparison-grid {
     grid-template-columns: 1fr;
