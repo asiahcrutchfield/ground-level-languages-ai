@@ -1,245 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ground Level Languages</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ground Level Languages</title>
+    <meta name="description" content="A zero-text vocabulary prototype for Ground Level Languages, using pictures, phonemes, syllables, and tones.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- =========================================================
-       FLOATING ZERO-TEXT MODE SWITCHER (Story / Primer / Review)
-       ========================================================= -->
-  <nav id="mode-switcher" aria-label="Stage Switcher">
-    <!-- 1. Story Preview Carousel -->
-    <button class="mode-orb active" data-stage="story-stage" aria-label="Story Preview Carousel">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 21V11M12 11C12 6.5 16 3 21 3C21 8 17.5 11 12 11ZM12 14C12 10 8.5 7 4 7C4 11.5 7 14 12 14Z" />
-      </svg>
-    </button>
+    
+    <!-- =============================================
+         🌿 VOCAB STAGE — main app shell
+         ============================================= -->
+    <div id="vocab-stage">
 
-    <!-- 2. Level 0 Vocabulary Primer -->
-    <button class="mode-orb" data-stage="vocab-stage" aria-label="Level 0 Vocabulary Primer">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="12" cy="8" r="3.5" />
-        <polygon points="7,19 12,12 17,19" />
-      </svg>
-    </button>
+        <!-- =========================================
+             🖼️ PICTURE CAROUSEL
+             ========================================= -->
+        <ul id="picture-carousel" class="vocab-item-wrapper" aria-label="Vocabulary picture carousel">
 
-    <!-- 3. Side-by-Side Sub-Word Review -->
-    <button class="mode-orb" data-stage="review-stage" aria-label="Side-by-Side Review">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="7.5" cy="12" r="3.5" />
-        <circle cx="16.5" cy="12" r="3.5" />
-        <path d="M12 4V20" stroke-dasharray="2 3" />
-      </svg>
-    </button>
-  </nav>
+            <!-- Previous card -->
+            <li class="carousel-card prev" data-index="4" role="button" tabindex="0" aria-label="Previous word">
+                <div class="picture-frame">
+                    <img class="carousel-pic" alt="" />
+                </div>
+            </li>
 
-  <!-- =========================================================
-       STAGE 1: STORY PREVIEW CAROUSEL (Progressive Reveal)
-       ========================================================= -->
-  <main id="story-stage" class="app-stage active-stage">
-    <div id="story-carousel" role="region" aria-label="Story Preview Carousel">
-      <!-- Previous Story Card (Veiled) -->
-      <article class="story-card prev veiled" data-story-index="2">
-        <div class="story-frame">
-          <img class="story-pic" src="" alt="" />
-          <div class="story-veil"></div>
-        </div>
-      </article>
+            <!-- Active (center) card -->
+            <li class="carousel-card active" data-index="0" role="button" tabindex="0" aria-label="Current word">
+                <div class="picture-frame">
+                    <img class="carousel-pic" alt="" />
+                </div>
+                <button class="carousel-play-btn" aria-label="Play word audio">
+                    <!-- Play triangle rendered purely via CSS/SVG — zero text -->
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <polygon points="6,3 20,12 6,21" fill="#F7F4EB"/>
+                    </svg>
+                </button>
+            </li>
 
-      <!-- Active Center Story Card (Revealed + Audio & Enter Controls) -->
-      <article class="story-card active" data-story-index="0">
-        <div class="story-frame">
-          <img class="story-pic" src="" alt="" />
-          <div class="story-veil"></div>
-        </div>
+            <!-- Next card -->
+            <li class="carousel-card next" data-index="1" role="button" tabindex="0" aria-label="Next word">
+                <div class="picture-frame">
+                    <img class="carousel-pic" alt="" />
+                </div>
+            </li>
 
-        <!-- Play Teaser Audio -->
-        <button class="story-play-btn" aria-label="Play Story Preview">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <polygon points="8,5 19,12 8,19" fill="#EFECE2" />
-          </svg>
-        </button>
+        </ul><!-- /#picture-carousel -->
 
-        <!-- Enter Level 0 Vocabulary Primer -->
-        <button class="story-enter-btn" aria-label="Enter Vocabulary Primer">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#EFECE2" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M5 12H19M13 6L19 12L13 18" />
-          </svg>
-        </button>
-      </article>
 
-      <!-- Next Story Card (Veiled) -->
-      <article class="story-card next veiled" data-story-index="1">
-        <div class="story-frame">
-          <img class="story-pic" src="" alt="" />
-          <div class="story-veil"></div>
-        </div>
-      </article>
-    </div>
+        <!-- =========================================
+             🔡 WORD BREAKDOWN CONTAINER
+             ========================================= -->
+        <div id="breakdown-wrapper">
 
-    <!-- Progressive Arc Dots (aria-hidden="true" required by zero-text CSS rule) -->
-    <div class="story-arc-dots" aria-label="Story Arc Progress">
-      <span class="arc-dot active" aria-hidden="true"></span>
-      <span class="arc-dot" aria-hidden="true"></span>
-      <span class="arc-dot" aria-hidden="true"></span>
-    </div>
-  </main>
+            <!-- ── Category switcher circles ── -->
+            <div id="category-wrapper" role="tablist" aria-label="Breakdown category">
 
-  <!-- =========================================================
-       STAGE 2: LEVEL 0 VOCABULARY PRIMER
-       ========================================================= -->
-  <section id="vocab-stage" class="app-stage">
-    <!-- Picture Carousel -->
-    <div id="picture-carousel" tabindex="0" role="region" aria-label="Vocabulary Carousel">
-      <div class="carousel-card prev" data-index="4">
-        <div class="picture-frame">
-          <img class="carousel-pic" src="" alt="" />
-        </div>
-      </div>
+                <!-- Phonemes button -->
+                <div class="breakdown-frame breakdown-category active"
+                     id="phoneme-category"
+                     role="tab"
+                     tabindex="0"
+                     aria-selected="true"
+                     aria-controls="phoneme-panel"
+                     data-category="phoneme"
+                     title="Phonemes">
+                    <img src="images/symbols/phonemes_transparent.png" alt="" class="category-img" aria-hidden="true">
+                </div>
 
-      <div class="carousel-card active" data-index="0">
-        <div class="picture-frame">
-          <img class="carousel-pic" src="" alt="" />
-        </div>
-        <button class="carousel-play-btn" aria-label="Play Full Word">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <polygon points="8,5 19,12 8,19" fill="#EFECE2" />
-          </svg>
-        </button>
-      </div>
+                <!-- Syllables button -->
+                <div class="breakdown-frame breakdown-category"
+                     id="syllable-category"
+                     role="tab"
+                     tabindex="0"
+                     aria-selected="false"
+                     aria-controls="syllable-panel"
+                     data-category="syllable"
+                     title="Syllables">
+                    <img src="images/symbols/syllables_transparent.png" alt="" class="category-img" aria-hidden="true">
+                </div>
 
-      <div class="carousel-card next" data-index="1">
-        <div class="picture-frame">
-          <img class="carousel-pic" src="" alt="" />
-        </div>
-      </div>
-    </div>
+                <!-- Tone button -->
+                <div class="breakdown-frame breakdown-category"
+                     id="tone-category"
+                     role="tab"
+                     tabindex="0"
+                     aria-selected="false"
+                     aria-controls="tone-panel"
+                     data-category="tone"
+                     title="Tones">
+                    <img src="images/symbols/tones_transparent.png" alt="" class="category-img" aria-hidden="true">
+                </div>
 
-    <!-- Sub-Word Breakdown Switcher & Timeline -->
-    <div id="breakdown-wrapper">
-      <div id="category-wrapper" role="tablist" aria-label="Sound Breakdown Category">
-        <!-- Phonemes -->
-        <button
-          class="breakdown-frame breakdown-category active"
-          data-category="phoneme"
-          role="tab"
-          aria-selected="true"
-          aria-label="Phonemes"
-        >
-          <img class="category-img" src="images/symbols/phonemes_transparent.png" alt="" />
-        </button>
+            </div><!-- /#category-wrapper -->
 
-        <!-- Syllables -->
-        <button
-          class="breakdown-frame breakdown-category"
-          data-category="syllable"
-          role="tab"
-          aria-selected="false"
-          aria-label="Syllables"
-        >
-          <img class="category-img" src="images/symbols/syllables_transparent.png" alt="" />
-        </button>
 
-        <!-- Tones / Pitch Contour -->
-        <button
-          class="breakdown-frame breakdown-category"
-          data-category="tone"
-          role="tab"
-          aria-selected="false"
-          aria-label="Tones"
-        >
-          <img class="category-img" src="images/symbols/tones_transparent.png" alt="" />
-        </button>
-      </div>
+            <!-- ── Stage: horizontal timeline with shapes ── -->
+            <div id="stage-wrapper">
+                <div class="stage-items-wrapper">
 
-      <div id="stage-wrapper">
-        <div class="stage-items-wrapper">
-          <ul id="phoneme-panel" class="category-list active" role="tabpanel"></ul>
-          <ul id="syllable-panel" class="category-list" role="tabpanel"></ul>
-          <ul id="tone-panel" class="category-list" role="tabpanel"></ul>
-        </div>
-        <div id="breakdown-stage"></div>
-      </div>
-    </div>
-  </section>
+                    <!-- PHONEME PANEL -->
+                    <ul class="category-list all-phonemes-list active"
+                        id="phoneme-panel"
+                        role="tabpanel"
+                        aria-labelledby="phoneme-category">
+                        <!-- Items injected by script.js -->
+                    </ul>
 
-  <!-- =========================================================
-       STAGE 3: SIDE-BY-SIDE REVIEW LAYOUT (Sub-Word Localization)
-       ========================================================= -->
-  <section id="review-stage" class="app-stage">
-    <!-- Sensory Picture Anchor + Item Stepper -->
-    <div class="review-anchor-bar">
-      <button id="review-prev-btn" class="review-nav-arrow" aria-label="Previous Item">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M15 18L9 12L15 6" />
-        </svg>
-      </button>
+                    <!-- SYLLABLE PANEL -->
+                    <ul class="category-list syllable-list"
+                        id="syllable-panel"
+                        role="tabpanel"
+                        aria-labelledby="syllable-category">
+                        <!-- Items injected by script.js -->
+                    </ul>
 
-      <div class="review-picture-frame">
-        <img id="review-anchor-img" src="" alt="" />
-      </div>
+                    <!-- TONE PANEL -->
+                    <ul class="category-list tone-list"
+                        id="tone-panel"
+                        role="tabpanel"
+                        aria-labelledby="tone-category">
+                        <!-- Items injected by script.js -->
+                    </ul>
 
-      <button id="review-next-btn" class="review-nav-arrow" aria-label="Next Item">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M9 18L15 12L9 6" />
-        </svg>
-      </button>
-    </div>
+                </div><!-- /.stage-items-wrapper -->
 
-    <!-- Side-by-Side Comparison Grid -->
-    <div class="review-comparison-grid">
-      <!-- LEFT CARD: Learner's Spoken Attempt -->
-      <article class="review-card learner-card">
-        <div class="review-role-badge learner-badge" aria-label="Learner Attempt">
-          <!-- Sprout / Learner Emblem -->
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M12 20V11M12 11C12 8 14.5 6 18 6C18 9 15.5 11 12 11ZM12 14C12 11 9.5 9 6 9C6 12 8.5 14 12 14Z" />
-          </svg>
-        </div>
+                <!-- The horizon line -->
+                <div id="breakdown-stage"></div>
 
-        <div class="review-timeline-box">
-          <ul id="learner-phoneme-list" class="review-phoneme-list"></ul>
-          <div class="review-horizon-line"></div>
-        </div>
+            </div><!-- /#stage-wrapper -->
 
-        <button id="review-learner-play" class="review-play-btn learner-play" aria-label="Play Learner Attempt">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <polygon points="8,5 19,12 8,19" fill="#EFECE2" />
-          </svg>
-        </button>
-      </article>
+        </div><!-- /#breakdown-wrapper -->
 
-      <!-- CENTER MIRROR DIVIDER -->
-      <div class="review-divider" aria-hidden="true">
-        <span class="review-seed-dot" aria-hidden="true"></span>
-      </div>
+    </div><!-- /#vocab-stage -->
 
-      <!-- RIGHT CARD: Native Target Reference -->
-      <article class="review-card target-card">
-        <div class="review-role-badge target-badge" aria-label="Target Native Audio">
-          <!-- Mature Botanical Tree Emblem -->
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M12 3L5 14H10V21H14V14H19L12 3Z" />
-          </svg>
-        </div>
-
-        <div class="review-timeline-box">
-          <ul id="target-phoneme-list" class="review-phoneme-list"></ul>
-          <div class="review-horizon-line"></div>
-        </div>
-
-        <button id="review-target-play" class="review-play-btn target-play" aria-label="Play Target Sound">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <polygon points="8,5 19,12 8,19" fill="#EFECE2" />
-          </svg>
-        </button>
-      </article>
-    </div>
-  </section>
-
-  <script src="script.js"></script>
+    <script src="script.js" defer></script>
 </body>
 </html>
