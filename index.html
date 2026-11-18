@@ -9,11 +9,94 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    
+
     <!-- =============================================
-         🌿 VOCAB STAGE — main app shell
+         🌱 ZERO-TEXT MODE SWITCHER (Story / Primer / Review)
          ============================================= -->
-    <div id="vocab-stage">
+    <nav id="mode-switcher" aria-label="Stage switcher">
+        <!-- 1. Story Preview Carousel -->
+        <button class="mode-orb" data-stage="story-stage" aria-label="Story Preview">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 20V10M12 10C12 6 15.5 3 20 3C20 7.5 17 10 12 10ZM12 13C12 9.5 9 7 5 7C5 11 7.5 13 12 13Z" />
+            </svg>
+        </button>
+
+        <!-- 2. Level 0 Vocabulary Primer (Existing Teammate View - Default Active) -->
+        <button class="mode-orb active" data-stage="vocab-stage" aria-label="Vocabulary Primer">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="5" />
+                <circle cx="12" cy="12" r="9" stroke-dasharray="3 3" />
+            </svg>
+        </button>
+
+        <!-- 3. Side-by-Side Diagnostic Review -->
+        <button class="mode-orb" data-stage="review-stage" aria-label="Side-by-Side Review">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="7.5" cy="12" r="3.5" />
+                <circle cx="16.5" cy="12" r="3.5" />
+                <line x1="12" y1="4" x2="12" y2="20" />
+            </svg>
+        </button>
+    </nav>
+
+
+    <!-- =============================================
+         📖 STAGE 1: STORY PREVIEW CAROUSEL (Progressive Reveal)
+         ============================================= -->
+    <section id="story-stage" class="app-stage" aria-label="Story Preview Carousel">
+        <ul id="story-carousel" class="story-carousel-wrapper" aria-label="Animal POV story previews">
+            <!-- Previous Teaser Card (Veiled) -->
+            <li class="story-card prev veiled" data-story-index="2" role="button" tabindex="0" aria-label="Previous story">
+                <div class="story-frame">
+                    <img class="story-pic" alt="" />
+                    <div class="story-veil" aria-hidden="true"></div>
+                </div>
+            </li>
+
+            <!-- Active Teaser Card (Revealed) -->
+            <li class="story-card active" data-story-index="0" role="button" tabindex="0" aria-label="Current story">
+                <div class="story-frame">
+                    <img class="story-pic" alt="" />
+                    <div class="story-veil" aria-hidden="true"></div>
+                </div>
+
+                <!-- Play Story Audio Teaser -->
+                <button class="story-play-btn" aria-label="Play story teaser">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <polygon points="6,3 20,12 6,21" fill="#F7F4EB"/>
+                    </svg>
+                </button>
+
+                <!-- Enter Level 0 Vocabulary Primer -->
+                <button class="story-enter-btn" aria-label="Enter vocabulary primer">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M5 12H19M13 6L19 12L13 18" stroke="#F7F4EB" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </li>
+
+            <!-- Next Teaser Card (Veiled) -->
+            <li class="story-card next veiled" data-story-index="1" role="button" tabindex="0" aria-label="Next story">
+                <div class="story-frame">
+                    <img class="story-pic" alt="" />
+                    <div class="story-veil" aria-hidden="true"></div>
+                </div>
+            </li>
+        </ul>
+
+        <!-- Progressive Arc Indicator (Preview -> Primer -> Audio Story) -->
+        <div class="story-arc-dots" aria-hidden="true">
+            <span class="arc-dot active" aria-hidden="true"></span>
+            <span class="arc-dot" aria-hidden="true"></span>
+            <span class="arc-dot" aria-hidden="true"></span>
+        </div>
+    </section>
+
+
+    <!-- =============================================
+         🌿 STAGE 2: VOCAB STAGE — existing app shell (PRESERVED)
+         ============================================= -->
+    <div id="vocab-stage" class="app-stage active-stage">
 
         <!-- =========================================
              🖼️ PICTURE CAROUSEL
@@ -135,6 +218,80 @@
         </div><!-- /#breakdown-wrapper -->
 
     </div><!-- /#vocab-stage -->
+
+
+    <!-- =============================================
+         🔍 STAGE 3: SIDE-BY-SIDE REVIEW LAYOUT (Sub-Word Localization)
+         ============================================= -->
+    <section id="review-stage" class="app-stage" aria-label="Side-by-side pronunciation review">
+        <!-- Sensory Visual Anchor + Item Stepper -->
+        <div class="review-anchor-bar">
+            <button id="review-prev-btn" class="review-nav-arrow" aria-label="Previous review item">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18L9 12L15 6" /></svg>
+            </button>
+
+            <div class="review-picture-frame">
+                <img id="review-anchor-img" alt="" />
+            </div>
+
+            <button id="review-next-btn" class="review-nav-arrow" aria-label="Next review item">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18L15 12L9 6" /></svg>
+            </button>
+        </div>
+
+        <!-- Side-by-Side Comparison Grid -->
+        <div class="review-comparison-grid">
+            <!-- LEFT CARD: Learner's Spoken Attempt -->
+            <div class="review-card learner-card">
+                <div class="review-role-badge learner-badge" aria-hidden="true">
+                    <!-- Sprout / Learner Icon -->
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="12" cy="8" r="3.5" />
+                        <path d="M5 20C5 16 8 14 12 14C16 14 19 16 19 20" />
+                    </svg>
+                </div>
+
+                <!-- Sub-Word Phoneme Timeline (Diverged phoneme pulses) -->
+                <div class="review-timeline-box">
+                    <ul id="learner-phoneme-list" class="review-phoneme-list"></ul>
+                    <div class="review-horizon-line" aria-hidden="true"></div>
+                </div>
+
+                <button id="review-learner-play" class="review-play-btn learner-play" aria-label="Play learner pronunciation">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <polygon points="6,3 20,12 6,21" fill="#F7F4EB"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- CENTER HORIZON DIVIDER -->
+            <div class="review-divider" aria-hidden="true">
+                <span class="review-seed-dot" aria-hidden="true"></span>
+            </div>
+
+            <!-- RIGHT CARD: Target Native Sound -->
+            <div class="review-card target-card">
+                <div class="review-role-badge target-badge" aria-hidden="true">
+                    <!-- Botanical Tree / Native Reference Icon -->
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 3L5 14H10V21H14V14H19L12 3Z" />
+                    </svg>
+                </div>
+
+                <!-- Sub-Word Phoneme Timeline (Target Reference) -->
+                <div class="review-timeline-box">
+                    <ul id="target-phoneme-list" class="review-phoneme-list"></ul>
+                    <div class="review-horizon-line" aria-hidden="true"></div>
+                </div>
+
+                <button id="review-target-play" class="review-play-btn target-play" aria-label="Play target pronunciation">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <polygon points="6,3 20,12 6,21" fill="#F7F4EB"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </section>
 
     <script src="script.js" defer></script>
 </body>
