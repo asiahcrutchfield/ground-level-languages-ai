@@ -136,6 +136,286 @@
 
     </div><!-- /#vocab-stage -->
 
+
+
+
+
+
+    <!-- =============================================
+         🧭 MODE SWITCHER (Zero-Text Botanical Nav)
+         Vocab / Story Preview / Side-by-Side Review
+         ============================================= -->
+    <nav id="mode-nav" aria-label="App mode switcher">
+        <!-- Vocab Mode -->
+        <button class="mode-btn active" data-target="vocab-stage" aria-label="Vocabulary mode" aria-pressed="true">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect x="4" y="4" width="7" height="7" rx="2" stroke="currentColor" stroke-width="2"/>
+                <rect x="13" y="4" width="7" height="7" rx="2" stroke="currentColor" stroke-width="2"/>
+                <rect x="4" y="13" width="7" height="7" rx="2" stroke="currentColor" stroke-width="2"/>
+                <circle cx="16.5" cy="16.5" r="3.5" stroke="currentColor" stroke-width="2"/>
+            </svg>
+        </button>
+
+        <!-- Story Preview Mode -->
+        <button class="mode-btn" data-target="story-stage" aria-label="Story preview mode" aria-pressed="false">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                <circle cx="12" cy="10" r="2.5" fill="currentColor"/>
+            </svg>
+        </button>
+
+        <!-- Side-by-Side Review Mode -->
+        <button class="mode-btn" data-target="review-stage" aria-label="Pronunciation review mode" aria-pressed="false">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect x="3" y="5" width="7" height="14" rx="2" stroke="currentColor" stroke-width="2"/>
+                <rect x="14" y="5" width="7" height="14" rx="2" stroke="currentColor" stroke-width="2"/>
+                <path d="M10 12h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </button>
+    </nav>
+
+
+    <!-- 既存の <div id="vocab-stage"> ... </div> はそのまま維持 -->
+
+
+    <!-- =============================================
+         📖 STORY PREVIEW CAROUSEL (Progressive Reveal)
+         ============================================= -->
+    <section id="story-stage" class="app-stage" aria-label="Story Preview Carousel" hidden>
+
+        <!-- Progressive-Reveal Story Carousel -->
+        <ul id="story-carousel" class="story-carousel-wrapper" aria-label="Story chapters">
+
+            <!-- Previous Story Card (Unlocked) -->
+            <li class="story-card prev unlocked" data-story-index="0" role="button" tabindex="0" aria-label="Previous story chapter">
+                <div class="picture-frame">
+                    <img class="story-pic" src="images/visuals/cat.jpg" alt="" />
+                </div>
+                <div class="story-veil" aria-hidden="true">
+                    <svg class="veil-icon" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 3C7.5 3 4 7.5 4 12s3.5 9 8 9 8-4.5 8-9-3.5-9-8-9z" stroke="currentColor" stroke-width="1.8" stroke-dasharray="3 3"/>
+                        <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                    </svg>
+                </div>
+            </li>
+
+            <!-- Active Story Card (Veiled Teaser → Primer Entry) -->
+            <li class="story-card active veiled" data-story-index="1" role="button" tabindex="0" aria-label="Current story teaser">
+                <div class="picture-frame">
+                    <img class="story-pic" src="images/visuals/walk.gif" alt="" />
+                </div>
+                <!-- Botanical frosted veil overlay for progressive reveal -->
+                <div class="story-veil" aria-hidden="true">
+                    <svg class="veil-icon" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 3C7.5 3 4 7.5 4 12s3.5 9 8 9 8-4.5 8-9-3.5-9-8-9z" stroke="currentColor" stroke-width="1.8" stroke-dasharray="3 3"/>
+                        <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                    </svg>
+                </div>
+                <!-- Enter Primer / Play Teaser Audio Button -->
+                <button class="carousel-play-btn story-action-btn" aria-label="Start story primer">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <polygon points="6,3 20,12 6,21" fill="#F7F4EB"/>
+                    </svg>
+                </button>
+            </li>
+
+            <!-- Next Story Card (Locked / Deep Veil) -->
+            <li class="story-card next locked" data-story-index="2" role="button" tabindex="0" aria-label="Upcoming locked story">
+                <div class="picture-frame">
+                    <img class="story-pic" src="images/visuals/tree.jpg" alt="" />
+                </div>
+                <div class="story-veil" aria-hidden="true">
+                    <svg class="veil-icon" viewBox="0 0 24 24" fill="none">
+                        <rect x="6" y="11" width="12" height="9" rx="2.5" stroke="currentColor" stroke-width="2"/>
+                        <path d="M8.5 11V8a3.5 3.5 0 0 1 7 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+            </li>
+
+        </ul><!-- /#story-carousel -->
+
+        <!-- Progressive Reveal Step Indicator (Teaser → Primer → Audio Story) -->
+        <div class="story-arc-tracker" role="group" aria-label="Story progression">
+            <div class="arc-node completed" aria-label="Preview">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <circle cx="12" cy="12" r="5" fill="currentColor"/>
+                </svg>
+            </div>
+            <div class="arc-connector active"></div>
+            <div class="arc-node current" aria-label="Level 0 Primer">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <polygon points="12,5 19,18 5,18" fill="currentColor"/>
+                </svg>
+            </div>
+            <div class="arc-connector"></div>
+            <div class="arc-node upcoming" aria-label="Audio Story">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M3 12h3l2-5 4 10 3-7 2 2h4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+        </div>
+
+    </section><!-- /#story-stage -->
+
+
+
+
+
+
+
+    
+
+
+
+
+
+    
+    <!-- =============================================
+         ⚖️ SIDE-BY-SIDE REVIEW LAYOUT (Target vs. Learner)
+         ============================================= -->
+    <section id="review-stage" class="app-stage" aria-label="Side-by-side pronunciation review" hidden>
+
+        <!-- Target Word Visual Reference (Compact Picture Card) -->
+        <div class="review-visual-header">
+            <div class="review-thumb-frame">
+                <img id="review-word-pic" src="images/visuals/cat.jpg" alt="" />
+            </div>
+            <!-- Sequential Compare Button (Plays Target → Learner back-to-back) -->
+            <button id="review-compare-btn" class="review-compare-btn" aria-label="Compare target and learner audio">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M7 10l5-5 5 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M17 14l-5 5-5-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Side-by-Side Comparison Grid -->
+        <div class="review-comparison-grid">
+
+            <!-- LEFT PANE: TARGET SOUND (Native Reference) -->
+            <article class="review-pane target-pane" aria-label="Target pronunciation">
+                <div class="pane-header">
+                    <!-- Native Speaker / Ear Emblem -->
+                    <div class="pane-emblem target-emblem" aria-hidden="true">
+                        <img src="images/symbols/native_speech_transparent.png" alt="" class="pane-symbol-img" />
+                    </div>
+                    <!-- Play Target Audio Button -->
+                    <button class="review-play-btn" id="play-target-btn" data-role="target" aria-label="Play target sound">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <polygon points="6,3 20,12 6,21" fill="#F7F4EB"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Target Phoneme / Tone Timeline -->
+                <div class="review-timeline-wrapper">
+                    <ul class="review-phoneme-list" id="review-target-list">
+                        <!-- Sample static structure (populated/updated dynamically by script.js) -->
+                        <li class="phoneme-item consonant-item" role="button" tabindex="0" aria-label="Target phoneme 1">
+                            <svg viewBox="0 0 34 34" aria-hidden="true">
+                                <circle cx="17" cy="17" r="15" fill="#C86D51"/>
+                                <circle cx="17" cy="17" r="7" fill="rgba(255,255,255,0.30)"/>
+                            </svg>
+                        </li>
+                        <li class="phoneme-item vowel-item" role="button" tabindex="0" aria-label="Target phoneme 2">
+                            <svg viewBox="0 0 34 34" aria-hidden="true">
+                                <polygon points="17,2 32,32 2,32" fill="#52B788"/>
+                                <polygon points="17,12 26,30 8,30" fill="rgba(255,255,255,0.30)"/>
+                            </svg>
+                        </li>
+                        <li class="phoneme-item consonant-item" role="button" tabindex="0" aria-label="Target phoneme 3">
+                            <svg viewBox="0 0 34 34" aria-hidden="true">
+                                <circle cx="17" cy="17" r="15" fill="#C86D51"/>
+                                <circle cx="17" cy="17" r="7" fill="rgba(255,255,255,0.30)"/>
+                            </svg>
+                        </li>
+                    </ul>
+                    <div class="review-horizon-line"></div>
+                </div>
+            </article>
+
+            <!-- CENTER BRIDGE DIVIDER -->
+            <div class="review-bridge" aria-hidden="true">
+                <div class="bridge-line"></div>
+                <div class="bridge-node">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <circle cx="8" cy="12" r="2.5" fill="currentColor"/>
+                        <circle cx="16" cy="12" r="2.5" fill="currentColor"/>
+                    </svg>
+                </div>
+                <div class="bridge-line"></div>
+            </div>
+
+            <!-- RIGHT PANE: LEARNER ATTEMPT (With Diverged Shape Highlight) -->
+            <article class="review-pane learner-pane" aria-label="Your pronunciation attempt">
+                <div class="pane-header">
+                    <!-- Learner / Microphone Wave Emblem -->
+                    <div class="pane-emblem learner-emblem" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" stroke-width="2"/>
+                            <path d="M5 11a7 7 0 0 0 14 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <line x1="12" y1="18" x2="12" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <!-- Play Learner Audio Button -->
+                    <button class="review-play-btn learner-play" id="play-learner-btn" data-role="learner" aria-label="Play your recording">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <polygon points="6,3 20,12 6,21" fill="#F7F4EB"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Learner Phoneme / Tone Timeline (.diverged pinpoints the error) -->
+                <div class="review-timeline-wrapper">
+                    <ul class="review-phoneme-list" id="review-learner-list">
+                        <li class="phoneme-item consonant-item" role="button" tabindex="0" aria-label="Learner phoneme 1">
+                            <svg viewBox="0 0 34 34" aria-hidden="true">
+                                <circle cx="17" cy="17" r="15" fill="#C86D51"/>
+                                <circle cx="17" cy="17" r="7" fill="rgba(255,255,255,0.30)"/>
+                            </svg>
+                        </li>
+                        <!-- Example: Diverged vowel shape (e.g. "cot" instead of "cat") -->
+                        <li class="phoneme-item vowel-item diverged" role="button" tabindex="0" aria-label="Diverged vowel sound">
+                            <svg viewBox="0 0 34 34" aria-hidden="true">
+                                <polygon points="17,2 32,32 2,32" fill="#52B788"/>
+                                <polygon points="17,12 26,30 8,30" fill="rgba(255,255,255,0.30)"/>
+                            </svg>
+                        </li>
+                        <li class="phoneme-item consonant-item" role="button" tabindex="0" aria-label="Learner phoneme 3">
+                            <svg viewBox="0 0 34 34" aria-hidden="true">
+                                <circle cx="17" cy="17" r="15" fill="#C86D51"/>
+                                <circle cx="17" cy="17" r="7" fill="rgba(255,255,255,0.30)"/>
+                            </svg>
+                        </li>
+                    </ul>
+                    <div class="review-horizon-line"></div>
+                </div>
+            </article>
+
+        </div><!-- /.review-comparison-grid -->
+
+    </section><!-- /#review-stage -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
     <script src="script.js" defer></script>
 </body>
 </html>
