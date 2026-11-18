@@ -1,12 +1,12 @@
 /**
-- Ground Level Languages — Zero-Text Vocabulary Prototype
-- script.js — AI pipeline audio & visuals with fallback resilience
+ * Ground Level Languages — Zero-Text Vocabulary Prototype
+ * script.js — AI pipeline audio & visuals with fallback resilience
  */
 
 'use strict';
 
 /* ============================================================
-1. BUILT-IN FALLBACK DATASET (5 words)
+   1. BUILT-IN FALLBACK DATASET (5 words)
    Guarantees the UI is immediately fully interactive even if
    lesson_data.json is being generated, empty, or inaccessible.
    ============================================================ */
@@ -100,41 +100,15 @@ const FALLBACK_ITEMS = [
 ];
 
 /* ============================================================
-   STORY PREVIEW ARCS (Animal-POV Sensory Reality Teasers)
-   ============================================================ */
-const STORY_ARCS = [
-  {
-    id: "story_cat_walk",
-    startVocabIndex: 0,
-    audio_url: "audio/cat.mp3",
-    svg: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240"><rect width="240" height="240" rx="24" fill="%23EFECE2"/><circle cx="175" cy="58" r="24" fill="%23E09F3E"/><path d="M0 175 Q80 155 160 172 T240 168 L240 240 L0 240 Z" fill="%2352B788"/><circle cx="95" cy="135" r="28" fill="%232D6A4F"/><polygon points="73,115 66,92 89,110" fill="%23C86D51"/><polygon points="117,115 124,92 101,110" fill="%23C86D51"/><ellipse cx="86" cy="133" rx="3.5" ry="5" fill="%23EFECE2"/><ellipse cx="104" cy="133" rx="3.5" ry="5" fill="%23EFECE2"/></svg>`
-  },
-  {
-    id: "story_dog_jump",
-    startVocabIndex: 1,
-    audio_url: "audio/dog.mp3",
-    svg: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240"><rect width="240" height="240" rx="24" fill="%23EFECE2"/><path d="M0 185 Q120 165 240 185 L240 240 L0 240 Z" fill="%232D6A4F"/><circle cx="120" cy="112" r="32" fill="%23E09F3E"/><ellipse cx="88" cy="116" rx="10" ry="22" fill="%23C86D51" transform="rotate(15 88 116)"/><ellipse cx="152" cy="116" rx="10" ry="22" fill="%23C86D51" transform="rotate(-15 152 116)"/><ellipse cx="108" cy="108" rx="4" ry="5" fill="%23EFECE2"/><ellipse cx="132" cy="108" rx="4" ry="5" fill="%23EFECE2"/></svg>`
-  },
-  {
-    id: "story_tree_bird",
-    startVocabIndex: 4,
-    audio_url: "audio/tree.mp3",
-    svg: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240"><rect width="240" height="240" rx="24" fill="%23EFECE2"/><rect x="110" y="138" width="20" height="68" rx="4" fill="%23C86D51"/><circle cx="120" cy="96" r="46" fill="%232D6A4F"/><circle cx="94" cy="112" r="30" fill="%2352B788"/><circle cx="146" cy="112" r="30" fill="%2352B788"/><path d="M46 64 Q60 52 72 64 Q84 52 98 64" fill="none" stroke="%232A85A8" stroke-width="4" stroke-linecap="round"/></svg>`
-  }
-];
-
-/* ============================================================
-2. STATE
+   2. STATE
    ============================================================ */
 let VOCAB          = FALLBACK_ITEMS;
 let activeIndex    = 0;
 let activeCategory = 'phoneme'; // 'phoneme' | 'syllable' | 'tone'
 let currentAudio   = null;
-let storyIndex     = 0;
-let reviewIndex    = 0;
 
 /* ============================================================
-3. AUDIO PLAYBACK (Single audio bus, graceful error catch)
+   3. AUDIO PLAYBACK (Single audio bus, graceful error catch)
    ============================================================ */
 function playAudio(url) {
   if (!url) return;
@@ -146,12 +120,13 @@ function playAudio(url) {
 
   currentAudio = new Audio(url);
   currentAudio.play().catch((err) => {
+    // Autoplay restrictions or missing clip logged without breaking UI
     console.warn(`Audio playback for "${url}":`, err.message || err);
   });
 }
 
 /* ============================================================
-4. INLINE SVG PLACEHOLDERS (Zero-Text Graceful Fallbacks)
+   4. INLINE SVG PLACEHOLDERS (Zero-Text Graceful Fallbacks)
    ============================================================ */
 function getPlaceholderSVG(id) {
   const bg = '%23EFECE2';
@@ -179,7 +154,7 @@ function getPlaceholderSVG(id) {
 }
 
 /* ============================================================
-5. DOM REFERENCES
+   5. DOM REFERENCES
    ============================================================ */
 const carousel      = document.getElementById('picture-carousel');
 const cards         = Array.from(carousel.querySelectorAll('.carousel-card'));
@@ -192,7 +167,7 @@ const syllablePanel = document.getElementById('syllable-panel');
 const tonePanel     = document.getElementById('tone-panel');
 
 /* ============================================================
-6. CAROUSEL RENDERING
+   6. CAROUSEL RENDERING
    ============================================================ */
 function renderCarousel() {
   if (!VOCAB || VOCAB.length === 0) return;
@@ -213,8 +188,9 @@ function renderCarousel() {
     const word = VOCAB[dataIdx];
     const img  = el.querySelector('.carousel-pic');
 
+    // Attach graceful fallback before assigning src
     img.onerror = function() {
-      this.onerror = null;
+      this.onerror = null; // prevent infinite loops
       this.src = getPlaceholderSVG(word.id);
     };
 
@@ -227,7 +203,7 @@ function renderCarousel() {
 }
 
 /* ============================================================
-7. BREAKDOWN PANELS
+   7. BREAKDOWN PANELS
    ============================================================ */
 function consonantSVG() {
   return `<svg viewBox="0 0 34 34" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -247,6 +223,7 @@ function renderBreakdown() {
   if (!VOCAB || VOCAB.length === 0) return;
   const word = VOCAB[activeIndex];
 
+  /* — Phoneme panel (consonant terracotta circles, vowel moss-green triangles) — */
   phonemePanel.innerHTML = '';
   (word.phonemes || []).forEach((ph) => {
     const li = document.createElement('li');
@@ -259,6 +236,7 @@ function renderBreakdown() {
     phonemePanel.appendChild(li);
   });
 
+  /* — Syllable panel (ochre amber pill bars proportional to duration) — */
   syllablePanel.innerHTML = '';
   (word.syllables || []).forEach((syl) => {
     const li = document.createElement('li');
@@ -271,6 +249,7 @@ function renderBreakdown() {
     syllablePanel.appendChild(li);
   });
 
+  /* — Tone panel (river-teal badges: solid, ring, dot) — */
   tonePanel.innerHTML = '';
   (word.tones || []).forEach((tone) => {
     const li = document.createElement('li');
@@ -285,7 +264,7 @@ function renderBreakdown() {
 }
 
 /* ============================================================
-8. CATEGORY SWITCHER
+   8. CATEGORY SWITCHER
    ============================================================ */
 function setActiveCategory(cat) {
   activeCategory = cat;
@@ -309,18 +288,21 @@ function setActiveCategory(cat) {
 }
 
 /* ============================================================
-9. CAROUSEL ROTATION & AUDIO-FIRST FEEDBACK
+   9. CAROUSEL ROTATION & AUDIO-FIRST FEEDBACK
    ============================================================ */
 function rotateTo(newIndex) {
   activeIndex = (newIndex + VOCAB.length) % VOCAB.length;
   renderCarousel();
   renderBreakdown();
+  // Audio-first rule: immediately trigger word audio on rotation
   playAudio(VOCAB[activeIndex].full_audio_url);
 }
 
 /* ============================================================
-10. INTERACTIVE EVENT HANDLERS
+   10. INTERACTIVE EVENT HANDLERS
    ============================================================ */
+
+/* Click prev/next card in carousel to rotate */
 carousel.addEventListener('click', (e) => {
   if (e.target.closest('.carousel-play-btn')) return;
   const card = e.target.closest('.carousel-card');
@@ -329,6 +311,7 @@ carousel.addEventListener('click', (e) => {
   if (card.classList.contains('next')) rotateTo(activeIndex + 1);
 });
 
+/* Keyboard arrow / enter navigation on carousel */
 carousel.addEventListener('keydown', (e) => {
   if (e.key === 'ArrowLeft') rotateTo(activeIndex - 1);
   if (e.key === 'ArrowRight') rotateTo(activeIndex + 1);
@@ -340,6 +323,7 @@ carousel.addEventListener('keydown', (e) => {
   }
 });
 
+/* Play button: replay active word without rotating */
 playBtn.addEventListener('click', (e) => {
   e.stopPropagation();
   playBtn.classList.add('playing');
@@ -347,6 +331,7 @@ playBtn.addEventListener('click', (e) => {
   setTimeout(() => playBtn.classList.remove('playing'), 900);
 });
 
+/* Category buttons */
 catBtns.forEach((btn) => {
   btn.addEventListener('click', () => setActiveCategory(btn.dataset.category));
   btn.addEventListener('keydown', (e) => {
@@ -357,12 +342,13 @@ catBtns.forEach((btn) => {
   });
 });
 
+/* Shape click listener & tactile bounce animation */
 function attachShapeListeners(panel) {
   const triggerShape = (item) => {
     if (!item || !item.dataset.audioUrl) return;
     playAudio(item.dataset.audioUrl);
     item.classList.remove('popping');
-    void item.offsetWidth;
+    void item.offsetWidth; // force reflow
     item.classList.add('popping');
     item.addEventListener('animationend', () => item.classList.remove('popping'), { once: true });
   };
@@ -385,184 +371,16 @@ attachShapeListeners(phonemePanel);
 attachShapeListeners(syllablePanel);
 attachShapeListeners(tonePanel);
 
-
 /* ============================================================
-11. STAGE SWITCHER (Story Preview <-> Vocab Primer <-> Side-by-Side Review)
-   ============================================================ */
-const modeOrbs = Array.from(document.querySelectorAll('.mode-orb'));
-const stages   = Array.from(document.querySelectorAll('.app-stage'));
-
-function switchStage(stageId) {
-  modeOrbs.forEach((orb) => {
-    orb.classList.toggle('active', orb.dataset.stage === stageId);
-  });
-  stages.forEach((stage) => {
-    stage.classList.toggle('active-stage', stage.id === stageId);
-  });
-
-  if (stageId === 'story-stage') renderStoryCarousel();
-  if (stageId === 'review-stage') renderSideBySideReview();
-}
-
-modeOrbs.forEach((orb) => {
-  orb.addEventListener('click', () => switchStage(orb.dataset.stage));
-});
-
-
-/* ============================================================
-12. STORY PREVIEW CAROUSEL (Progressive Reveal)
-   ============================================================ */
-const storyCarousel = document.getElementById('story-carousel');
-const storyCards    = Array.from(storyCarousel.querySelectorAll('.story-card'));
-const storyPlayBtn  = storyCarousel.querySelector('.story-play-btn');
-const storyEnterBtn = storyCarousel.querySelector('.story-enter-btn');
-const arcDots       = Array.from(document.querySelectorAll('.arc-dot'));
-
-function renderStoryCarousel() {
-  const total   = STORY_ARCS.length;
-  const prevIdx = (storyIndex - 1 + total) % total;
-  const nextIdx = (storyIndex + 1) % total;
-
-  const slots = [
-    { el: storyCards[0], idx: prevIdx,    cls: 'prev veiled' },
-    { el: storyCards[1], idx: storyIndex, cls: 'active'      },
-    { el: storyCards[2], idx: nextIdx,    cls: 'next veiled' },
-  ];
-
-  slots.forEach(({ el, idx, cls }) => {
-    el.className = `story-card ${cls}`;
-    el.dataset.storyIndex = idx;
-    const img = el.querySelector('.story-pic');
-    img.src = STORY_ARCS[idx].svg;
-  });
-
-  arcDots.forEach((dot, i) => {
-    dot.classList.toggle('active', i === storyIndex);
-  });
-}
-
-function rotateStoryTo(newIndex) {
-  storyIndex = (newIndex + STORY_ARCS.length) % STORY_ARCS.length;
-  renderStoryCarousel();
-  playAudio(STORY_ARCS[storyIndex].audio_url);
-}
-
-storyCarousel.addEventListener('click', (e) => {
-  if (e.target.closest('.story-play-btn') || e.target.closest('.story-enter-btn')) return;
-  const card = e.target.closest('.story-card');
-  if (!card) return;
-  if (card.classList.contains('prev')) rotateStoryTo(storyIndex - 1);
-  if (card.classList.contains('next')) rotateStoryTo(storyIndex + 1);
-});
-
-storyPlayBtn.addEventListener('click', (e) => {
-  e.stopPropagation();
-  storyPlayBtn.classList.add('playing');
-  playAudio(STORY_ARCS[storyIndex].audio_url);
-  setTimeout(() => storyPlayBtn.classList.remove('playing'), 900);
-});
-
-// Transition from Story Preview directly into Level 0 Vocabulary Primer
-storyEnterBtn.addEventListener('click', (e) => {
-  e.stopPropagation();
-  const targetVocab = STORY_ARCS[storyIndex].startVocabIndex || 0;
-  switchStage('vocab-stage');
-  rotateTo(targetVocab);
-});
-
-
-/* ============================================================
-13. SIDE-BY-SIDE REVIEW LAYOUT (Sub-Word Divergence Localization)
-   ============================================================ */
-const reviewAnchorImg     = document.getElementById('review-anchor-img');
-const learnerPhonemeList  = document.getElementById('learner-phoneme-list');
-const targetPhonemeList   = document.getElementById('target-phoneme-list');
-const reviewLearnerPlay   = document.getElementById('review-learner-play');
-const reviewTargetPlay    = document.getElementById('review-target-play');
-const reviewPrevBtn       = document.getElementById('review-prev-btn');
-const reviewNextBtn       = document.getElementById('review-next-btn');
-
-function renderSideBySideReview() {
-  if (!VOCAB || VOCAB.length === 0) return;
-  const word = VOCAB[reviewIndex];
-
-  // Sensory picture anchor
-  reviewAnchorImg.onerror = function() {
-    this.onerror = null;
-    this.src = getPlaceholderSVG(word.id);
-  };
-  reviewAnchorImg.src = word.visual_url || getPlaceholderSVG(word.id);
-
-  // Pinpoint diverged phoneme index (supports lesson_data.json diverged_index or defaults to vowel)
-  const phonemes = word.phonemes || [];
-  let divergedIdx = typeof word.diverged_index === 'number'
-    ? word.diverged_index
-    : phonemes.findIndex((p) => p.kind === 'vowel');
-  if (divergedIdx < 0) divergedIdx = 0;
-
-  // Render Learner Attempt Timeline (Left)
-  learnerPhonemeList.innerHTML = '';
-  phonemes.forEach((ph, idx) => {
-    const li = document.createElement('li');
-    const isDiverged = idx === divergedIdx;
-    li.className = `phoneme-item ${ph.kind}-item${isDiverged ? ' diverged' : ''}`;
-    li.setAttribute('role', 'button');
-    li.setAttribute('tabindex', '0');
-    li.setAttribute('aria-label', 'Play learner phoneme');
-    li.dataset.audioUrl = ph.learner_audio_url || ph.audio_url || word.full_audio_url;
-    li.innerHTML = ph.kind === 'consonant' ? consonantSVG() : vowelSVG();
-    learnerPhonemeList.appendChild(li);
-  });
-
-  // Render Native Target Timeline (Right)
-  targetPhonemeList.innerHTML = '';
-  phonemes.forEach((ph, idx) => {
-    const li = document.createElement('li');
-    const isTargetFocus = idx === divergedIdx;
-    li.className = `phoneme-item ${ph.kind}-item${isTargetFocus ? ' target-highlight' : ''}`;
-    li.setAttribute('role', 'button');
-    li.setAttribute('tabindex', '0');
-    li.setAttribute('aria-label', 'Play target phoneme');
-    li.dataset.audioUrl = ph.audio_url || word.full_audio_url;
-    li.innerHTML = ph.kind === 'consonant' ? consonantSVG() : vowelSVG();
-    targetPhonemeList.appendChild(li);
-  });
-}
-
-attachShapeListeners(learnerPhonemeList);
-attachShapeListeners(targetPhonemeList);
-
-reviewLearnerPlay.addEventListener('click', () => {
-  const word = VOCAB[reviewIndex];
-  playAudio(word.learner_audio_url || word.humming_audio_url || word.full_audio_url);
-});
-
-reviewTargetPlay.addEventListener('click', () => {
-  const word = VOCAB[reviewIndex];
-  playAudio(word.full_audio_url);
-});
-
-reviewPrevBtn.addEventListener('click', () => {
-  reviewIndex = (reviewIndex - 1 + VOCAB.length) % VOCAB.length;
-  renderSideBySideReview();
-});
-
-reviewNextBtn.addEventListener('click', () => {
-  reviewIndex = (reviewIndex + 1) % VOCAB.length;
-  renderSideBySideReview();
-});
-
-
-/* ============================================================
-14. INITIALIZATION & DATA LOADING
+   11. INITIALIZATION & DATA LOADING
    ============================================================ */
 function init() {
+  // 1. Immediately render fallback data so screen is never blank or broken
   renderCarousel();
   renderBreakdown();
   setActiveCategory('phoneme');
-  renderStoryCarousel();
-  renderSideBySideReview();
 
+  // 2. Fetch lesson_data.json asynchronously
   fetch('./lesson_data.json')
     .then((res) => {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -573,7 +391,6 @@ function init() {
         VOCAB = data.items;
         renderCarousel();
         renderBreakdown();
-        renderSideBySideReview();
       } else {
         console.warn('lesson_data.json had no items; keeping verified fallback bank.');
       }
