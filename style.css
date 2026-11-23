@@ -1011,3 +1011,97 @@ button {
     bottom: auto;
   }
 }
+
+/* Assessment stages share the vocabulary stage's botanical canvas and snap rhythm. */
+#assessment-stage { background: var(--bg); }
+#listening-test, #pronunciation-test, #diagnostic-stage {
+  display: flex;
+  width: 100vw;
+  min-height: 100vh;
+  height: 100vh;
+  scroll-snap-align: start;
+  position: relative;
+  box-sizing: border-box;
+  background-color: var(--bg);
+  background-image: radial-gradient(ellipse at 18% 18%, rgba(255,255,255,.08), transparent 52%), radial-gradient(ellipse at 82% 82%, rgba(45,106,79,.35), transparent 55%);
+}
+#listening-test {
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 48px;
+  max-width: 100vw;
+  margin-inline: auto;
+}
+#listening-test .listening-choice {
+  width: 120px;
+  height: 120px;
+  border-radius: 24px;
+  border: 2.5px solid var(--border);
+  background: var(--card-bg);
+  box-shadow: var(--shadow-active);
+}
+#listening-test .choice-1, #listening-test .choice-2 { cursor: pointer; }
+#listening-test .listening-choice svg { width: 72px; height: 72px; }
+#listening-test .listening-question {
+  width: 96px;
+  height: 96px;
+  border: 3px solid var(--primary);
+  background: var(--card-bg);
+}
+#listening-test .listening-question svg { width: 56px; height: 56px; }
+#listening-test .listening-question.playing svg path { animation: waveBarPlay .55s ease-in-out infinite alternate; }
+#listening-test .listening-choice.selected { box-shadow: 0 0 0 7px rgba(42,133,168,.36), var(--shadow-active); }
+#listening-test .listening-choice.correct { box-shadow: 0 0 0 8px rgba(82,183,136,.52), var(--shadow-active); }
+#listening-test .listening-choice.incorrect { box-shadow: 0 0 0 8px rgba(42,133,168,.42), var(--shadow-active); }
+
+#pronunciation-test { align-items: center; justify-content: center; padding: 48px 24px; }
+.pronunciation-stage-inner { position: relative; width: min(820px, 100%); height: min(620px, 82vh); }
+#pronunciation-target-wrapper { position: absolute; top: 10%; right: 4%; width: auto; }
+#pronunciation-practice-wrapper { position: absolute; bottom: 12%; left: 4%; width: auto; margin: 0; }
+#pronunciation-target, #pronunciation-practice { padding: 10px 14px; gap: 18px; border: 2px solid var(--border); background: var(--card-bg); border-radius: 24px; box-shadow: var(--shadow-active); }
+.pronunciation-soundwave { min-width: 180px; height: 58px; background: var(--card-bg); border: 2px solid var(--border); }
+.pronunciation-symbol-frame { width: 84px; height: 84px; border: 3px solid var(--primary); background: var(--card-bg); }
+#pronunciation-practice-symbol-frame { border-color: var(--terracotta); }
+#pronunciation-practice-symbol-frame img { width: 58px; height: 58px; object-fit: contain; }
+#pronunciation-btn-wrapper { position: absolute; left: 50%; bottom: 1%; transform: translateX(-50%); margin: 0; height: 54px; }
+.record-btn { width: 48px; height: 48px; }
+
+#diagnostic-stage { align-items: center; justify-content: center; gap: 56px; height: 100vh; }
+.diagnostic-progress-container { width: 32px !important; height: 240px; max-width: none !important; flex: 0 0 32px; }
+.diagnostic-progress-bar { position: relative; width: 32px; height: 240px; border: 3px solid var(--border); border-radius: 999px; background: var(--card-bg); overflow: visible; }
+.diagnostic-progress-symbol { display: contents; }
+.diagnostic-progress-bar > .diagnostic-progress-fill { z-index: 1; }
+.diagnostic-progress-bar > .diagnostic-progress-symbol > .progress-indicator { z-index: 3; }
+.diagnostic-progress-fill { position: absolute; bottom: 0; left: 0; width: 100%; height: 0%; border-radius: 999px; transition: height .7s ease; }
+.hearing-side-fill { background: var(--terracotta); }
+.pronunciation-side-fill { background: #2A85A8; }
+.progress-indicator { position: absolute; z-index: 2; left: 50%; bottom: 0; width: 22px; height: 22px; transform: translate(-50%, 50%); border-radius: 50%; background: var(--card-bg); border: 3px solid var(--border); box-shadow: 0 2px 9px rgba(0,0,0,.2); transition: bottom .7s ease; }
+.standard-wrapper { width: 240px; height: 220px; }
+.diagnostic-standard { width: 240px; height: 220px; border: 0; border-radius: 0; background: none; }
+.mountain-meter { position: relative; overflow: hidden; background: var(--card-bg); clip-path: polygon(50% 4%, 98% 96%, 2% 96%); filter: drop-shadow(0 8px 16px rgba(0,0,0,.16)); }
+.mountain-fill { position: absolute; bottom: 0; width: 50%; height: 0%; transition: height .7s ease; }
+.mountain-fill-hearing { left: 0; background: var(--terracotta); }
+.mountain-fill-pronunciation { right: 0; background: #2A85A8; }
+.diagnostic-standard svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+#test-review-wrapper { scroll-snap-align: start; }
+
+@media (max-width: 600px) {
+  #listening-test { gap: clamp(14px, 5vw, 32px); padding: 20px; }
+  #listening-test .listening-choice { width: 88px; height: 88px; }
+  #listening-test .listening-choice svg { width: 54px; height: 54px; }
+  #listening-test .listening-question { width: 76px; height: 76px; }
+  #pronunciation-test { padding: 20px; }
+  .pronunciation-stage-inner { height: 70vh; }
+  #pronunciation-target-wrapper { top: 8%; right: 0; }
+  #pronunciation-practice-wrapper { left: 0; bottom: 15%; }
+  #pronunciation-target, #pronunciation-practice { gap: 8px; padding: 7px; }
+  .pronunciation-soundwave { min-width: 100px; width: 34vw; }
+  .pronunciation-symbol-frame { width: 64px; height: 64px; }
+  #pronunciation-btn-wrapper { width: 240px; bottom: 0; }
+  #diagnostic-stage { gap: clamp(18px, 7vw, 40px); }
+  .standard-wrapper, .diagnostic-standard { width: 180px; height: 170px; }
+  .diagnostic-progress-container, .diagnostic-progress-bar { width: 24px !important; flex-basis: 24px; }
+  .diagnostic-progress-bar { height: 190px; }
+}
