@@ -193,7 +193,7 @@
                     <div class="pronunciation-task practice" id="pronunciation-practice" role="button" tabindex="0" aria-label="Play recorded practice sound">
                         <!-- Circular speaking-profile badge on the left -->
                         <div class="pronunciation-symbol-frame symbol-frame" id="pronunciation-practice-symbol-frame">
-                            <svg viewBox="0 0 100 100" aria-hidden="true"><path d="M58 12c-20 0-34 14-34 35 0 16 7 27 19 34l4 12h20l-3-13c10-7 14-17 14-31V33c0-13-8-21-20-21Z" fill="#EFECE2" stroke="#C86D51" stroke-width="5" stroke-linejoin="round"/><path d="M67 48h12l-8 8 8 6H65" fill="none" stroke="#C86D51" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M87 43c7 5 7 12 0 17M94 37c11 8 11 21 0 29" fill="none" stroke="#C86D51" stroke-width="3.5" stroke-linecap="round"/></svg>
+                            <img src="images/symbols/speaking_transparent.png" alt="" class="symbol-img" aria-hidden="true">
                         </div>
                         <!-- Practice soundwave on the right -->
                         <div class="pronunciation-soundwave soundwave" id="pronunciation-practice-soundwave"></div>
@@ -208,38 +208,6 @@
                 </div>
             </div>
         </div><!-- /#🗣️ pronunciation test 🗣️ -->
-
-        <!-- 🗣️🩺👂 pronunciation & speaking diagnostic 🗣️🩺👂 -->
-        <div class="pron-speaking-diagnostic-wrapper" id="diagnostic-stage">
-            <!-- Progress bar for hearing diagnostic -->
-            <div class="progress-container diagnostic-progress-container" id="hearing-progress-container">
-                <div class="progress-bar diagnostic-progress-bar" id="hearing-progress-bar">
-                    <div class="progress-symbol diagnostic-progress-symbol symbol-frame" id="hearing-progress-symbol-frame">
-                        <span class="progress-indicator" aria-hidden="true"></span>
-                    </div>
-                    <div class="progress-fill diagnostic-progress-fill hearing-side-fill"></div>
-                </div>
-            </div>
-
-            <!-- Diagnostic standard -->
-            <div class="standard-wrapper" id="diagnostic-standard-wrapper">
-                <div class="diagnostic-standard mountain-meter">
-                    <div class="mountain-fill mountain-fill-hearing" id="hearing-progress-fill"></div>
-                    <div class="mountain-fill mountain-fill-pronunciation" id="pronunciation-progress-fill"></div>
-                    <svg viewBox="0 0 240 220" aria-hidden="true"><path d="M120 8 232 212H8Z" fill="none" stroke="#D3CEB6" stroke-width="5" stroke-linejoin="round"/></svg>
-                </div>
-            </div>
-
-            <!-- Progress bar for pronunciation diagnostic -->
-            <div class="progress-container diagnostic-progress-container" id="pronunciation-progress-container">
-                <div class="progress-bar diagnostic-progress-bar" id="pronunciation-progress-bar">
-                    <div class="progress-symbol diagnostic-progress-symbol symbol-frame" id="pronunciation-progress-symbol-frame">
-                        <span class="progress-indicator" aria-hidden="true"></span>
-                    </div>
-                    <div class="progress-fill diagnostic-progress-fill pronunciation-side-fill"></div>
-                </div>
-            </div>
-        </div><!-- /#🗣️🩺👂 pronunciation & speaking diagnostic 🗣️🩺👂 -->
 
         <!-- 🔄 test review 🔄 -->
         <div class="review-wrapper" id="test-review-wrapper">
@@ -295,6 +263,36 @@
                 </div>
             </div>
         </div><!-- /#🔄 test review 🔄 -->
+
+        <!-- 🗣️🩺👂 pronunciation & speaking diagnostic 🗣️🩺👂 -->
+        <div class="pron-speaking-diagnostic-wrapper" id="diagnostic-stage">
+            <!-- Progress bar for hearing diagnostic -->
+            <div class="progress-container diagnostic-progress-container" id="hearing-progress-container">
+                <div class="progress-bar diagnostic-progress-bar" id="hearing-progress-bar">
+                    <div class="progress-symbol diagnostic-progress-symbol symbol-frame" id="hearing-progress-symbol-frame">
+                        <span class="progress-dot progress-indicator" aria-hidden="true"></span>
+                    </div>
+                    <div class="progress-fill diagnostic-progress-fill hearing-side-fill" id="hearing-progress-fill"></div>
+                </div>
+            </div>
+
+            <!-- Diagnostic standard -->
+            <div class="standard-wrapper" id="diagnostic-standard-wrapper">
+                <div class="diagnostic-standard mountain-meter">
+                    <svg viewBox="0 0 240 220" aria-hidden="true"><path d="M120 8 232 212H8Z" fill="#EFECE2" stroke="#D3CEB6" stroke-width="5" stroke-linejoin="round"/></svg>
+                </div>
+            </div>
+
+            <!-- Progress bar for pronunciation diagnostic -->
+            <div class="progress-container diagnostic-progress-container" id="pronunciation-progress-container">
+                <div class="progress-bar diagnostic-progress-bar" id="pronunciation-progress-bar">
+                    <div class="progress-symbol diagnostic-progress-symbol symbol-frame" id="pronunciation-progress-symbol-frame">
+                        <span class="progress-dot progress-indicator" aria-hidden="true"></span>
+                    </div>
+                    <div class="progress-fill diagnostic-progress-fill pronunciation-side-fill" id="pronunciation-progress-fill"></div>
+                </div>
+            </div>
+        </div><!-- /#🗣️🩺👂 pronunciation & speaking diagnostic 🗣️🩺👂 -->
 
     </div><!-- /#assessment-stage -->
 
