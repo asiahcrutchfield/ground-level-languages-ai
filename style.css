@@ -1066,16 +1066,16 @@ button {
 #listening-test .listening-choice.incorrect { box-shadow: 0 0 0 8px rgba(42,133,168,.42), var(--shadow-active); }
 
 #pronunciation-test { align-items: center; justify-content: center; padding: 48px 24px; overflow: hidden; }
-.pronunciation-stage-inner { position: relative; width: min(820px, 100%); height: min(620px, 82vh); }
-#pronunciation-target-wrapper { position: absolute; top: 10%; right: 4%; width: auto; }
-#pronunciation-practice-wrapper { position: absolute; bottom: 12%; left: 4%; width: auto; margin: 0; }
+.pronunciation-stage-inner { position: relative; width: min(820px, 100%); height: min(680px, 88vh); }
+#pronunciation-target-wrapper { position: absolute; top: 6%; right: 4%; width: auto; }
+#pronunciation-practice-wrapper { position: absolute; bottom: 112px; left: 4%; width: auto; margin: 0; }
 #pronunciation-target, #pronunciation-practice { padding: 10px 14px; gap: 18px; border: 2px solid var(--border); background: var(--card-bg); border-radius: 24px; box-shadow: var(--shadow-active); }
 .pronunciation-soundwave { min-width: 180px; height: 58px; background: var(--card-bg); border: 2px solid var(--border); }
 .pronunciation-symbol-frame { width: 84px; height: 84px; border: 3px solid var(--primary); background: var(--card-bg); }
 #pronunciation-practice-symbol-frame { border-color: var(--terracotta); }
 .symbol-frame .symbol-img { width: 78%; height: 78%; object-fit: contain; display: block; pointer-events: none; }
 span.progress-dot { display: block; }
-#pronunciation-btn-wrapper { position: absolute; left: 50%; bottom: 1%; transform: translateX(-50%); margin: 0; height: 54px; }
+#pronunciation-btn-wrapper { position: absolute; left: 50%; bottom: 24px; transform: translateX(-50%); margin: 0; height: 54px; }
 .record-btn { width: 48px; height: 48px; }
 
 #diagnostic-stage { display: flex; flex-direction: row; align-items: flex-end; justify-content: center; gap: 64px; width: 100vw; height: 100vh; min-height: 100vh; padding: 0 24px 18vh; overflow: hidden; box-sizing: border-box; scroll-snap-align: start; }
@@ -1104,15 +1104,155 @@ span.progress-dot { display: block; }
   #listening-test .listening-choice svg { width: 54px; height: 54px; }
   #listening-test .listening-question { width: 76px; height: 76px; }
   #pronunciation-test { padding: 20px; }
-  .pronunciation-stage-inner { height: 70vh; }
-  #pronunciation-target-wrapper { top: 8%; right: 0; }
-  #pronunciation-practice-wrapper { left: 0; bottom: 15%; }
+  .pronunciation-stage-inner { height: 76vh; }
+  #pronunciation-target-wrapper { top: 6%; right: 0; }
+  #pronunciation-practice-wrapper { left: 0; bottom: 96px; }
   #pronunciation-target, #pronunciation-practice { gap: 8px; padding: 7px; }
   .pronunciation-soundwave { min-width: 100px; width: 34vw; }
   .pronunciation-symbol-frame { width: 64px; height: 64px; }
-  #pronunciation-btn-wrapper { width: 240px; bottom: 0; }
+  #pronunciation-btn-wrapper { width: 240px; bottom: 16px; }
   #diagnostic-stage { gap: clamp(18px, 7vw, 40px); padding-bottom: 12vh; }
   .standard-wrapper, .diagnostic-standard { width: 180px; height: 170px; }
   .diagnostic-progress-container, .diagnostic-progress-bar { width: 24px !important; flex-basis: 24px; }
   .diagnostic-progress-bar { height: 190px; }
+}
+
+/* Guided mode keeps one stage on screen while the step dots remain demo navigation. */
+body.guided-flow {
+  height: 100vh;
+  overflow: hidden;
+  scroll-snap-type: none;
+}
+body.guided-flow #assessment-stage {
+  position: static;
+  width: auto;
+  height: 0;
+  min-height: 0;
+  overflow: visible;
+}
+body.guided-flow .lesson-stage {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  width: 100vw;
+  height: 100vh;
+  min-height: 100vh;
+  margin: 0;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(12px);
+  scroll-snap-align: none;
+  transition: opacity .35s ease, transform .35s ease, visibility 0s linear .35s;
+}
+body.guided-flow .lesson-stage.flow-active {
+  z-index: 2;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+  transition-delay: 0s;
+}
+/* ID-specific rules keep the active panel visible even alongside stage ID rules. */
+body.guided-flow #vocab-stage,
+body.guided-flow #assessment-stage > .lesson-stage {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  min-height: 100vh !important;
+  margin: 0 !important;
+}
+body.guided-flow #vocab-stage:not(.flow-active),
+body.guided-flow #assessment-stage > .lesson-stage:not(.flow-active) {
+  display: none !important;
+}
+body.guided-flow #vocab-stage.flow-active,
+body.guided-flow #listening-test.flow-active,
+body.guided-flow #pronunciation-test.flow-active,
+body.guided-flow #diagnostic-stage.flow-active {
+  display: flex !important;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  z-index: 2;
+  animation: lessonStageEnter .32s ease-out both;
+}
+body.guided-flow #test-review-wrapper.flow-active {
+  display: grid !important;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  z-index: 2;
+  animation: lessonStageEnter .32s ease-out both;
+}
+
+.lesson-next-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-circle);
+  background: var(--card-bg);
+  border: 2.5px solid var(--primary);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-btn);
+  transition: transform .25s var(--ease), background-color .2s, color .2s, opacity .3s;
+  opacity: .45;
+  pointer-events: none;
+}
+.lesson-next-btn:disabled { cursor: default; }
+.lesson-next-btn.unlocked {
+  opacity: 1;
+  pointer-events: auto;
+  animation: gentleReadyPulse 2.2s ease-in-out infinite;
+}
+.lesson-next-btn.unlocked:hover {
+  transform: scale(1.12);
+  background: var(--primary);
+  color: var(--alabaster);
+}
+.lesson-next-btn svg { width: 26px; height: 26px; }
+.vocab-next-btn { position: absolute; right: 84px; bottom: 24px; }
+.diagnostic-next-btn {
+  position: absolute;
+  bottom: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.diagnostic-next-btn.unlocked:hover { transform: translateX(-50%) scale(1.12); }
+.review-restart-btn {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.review-restart-btn:hover { transform: translateX(-50%) scale(1.12); }
+.stage-nav-dot.completed { background: var(--primary); border-color: var(--alabaster); }
+.stage-nav-dot:not(.active):not(.completed) { background: rgba(255,255,255,.22); border-color: rgba(239,236,226,.58); }
+
+@keyframes gentleReadyPulse {
+  0%, 100% { box-shadow: 0 4px 16px rgba(45, 106, 79, .30); }
+  50% { box-shadow: 0 0 0 8px rgba(82, 183, 136, .28), 0 4px 16px rgba(45, 106, 79, .35); }
+}
+@keyframes stageCompletionGlow {
+  0%, 100% { box-shadow: inset 0 0 0 0 rgba(82,183,136,0); }
+  45% { box-shadow: inset 0 0 0 12px rgba(82,183,136,.5); }
+}
+@keyframes lessonStageEnter {
+  from { opacity: .55; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+#listening-test.round-complete { animation: stageCompletionGlow .7s ease-out; }
+
+@media (max-width: 600px) {
+  .vocab-next-btn { right: 72px; bottom: 18px; }
+  .diagnostic-next-btn { bottom: 20px; }
+  .review-restart-btn { bottom: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.guided-flow .lesson-stage,
+  .lesson-next-btn.unlocked,
+  #listening-test.round-complete { transition-duration: .01ms; animation-duration: .01ms; }
 }

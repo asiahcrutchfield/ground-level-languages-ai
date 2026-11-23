@@ -24,7 +24,7 @@
     <!-- =============================================
          🌿 VOCAB STAGE
          ============================================= -->
-    <div id="vocab-stage">
+    <div id="vocab-stage" class="lesson-stage">
 
         <!-- =========================================
              🖼️ PICTURE CAROUSEL
@@ -145,6 +145,12 @@
 
         </div><!-- /#breakdown-wrapper -->
 
+        <button class="lesson-next-btn vocab-next-btn" data-next-stage="listening-test" aria-label="Next step" aria-disabled="true" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M5 12h14M13 6l6 6-6 6"/>
+            </svg>
+        </button>
+
     </div><!-- /#vocab-stage -->
 
     <!-- =============================================
@@ -152,7 +158,7 @@
          ============================================= -->
     <div id="assessment-stage">
         <!-- 👂 listening test 👂 -->
-        <div class="assessment-wrapper" id="listening-test">
+        <div class="assessment-wrapper lesson-stage" id="listening-test">
             <div class="listening-choice choice-1 symbol-frame" role="button" aria-label="First sound choice" tabindex="0">
                 <svg viewBox="0 0 100 100" aria-hidden="true"><polygon points="50,8 94,88 6,88" fill="#C86D51"/></svg>
             </div>
@@ -167,7 +173,7 @@
         </div><!-- /#👂 listening test 👂 -->
 
         <!-- 🗣️ pronunciation test 🗣️ -->
-        <div class="assessment-wrapper" id="pronunciation-test">
+        <div class="assessment-wrapper lesson-stage" id="pronunciation-test">
             <div class="pronunciation-stage-inner">
                 <!-- Top-Right Target Row -->
                 <div class="pronunciation-task-wrapper" id="pronunciation-target-wrapper">
@@ -210,7 +216,7 @@
         </div><!-- /#🗣️ pronunciation test 🗣️ -->
 
         <!-- 🔄 test review 🔄 -->
-        <div class="review-wrapper" id="test-review-wrapper">
+        <div class="review-wrapper lesson-stage" id="test-review-wrapper">
             <!-- user review column (left) -->
             <div class="review-column" id="user-review-column">
                 <ul class="review-list" id="user-review-list">
@@ -262,10 +268,16 @@
                     </div>
                 </div>
             </div>
+
+            <button class="lesson-next-btn unlocked review-restart-btn" aria-label="Restart lesson">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M20 11a8 8 0 0 0-14.9-3M4 4v4h4M4 13a8 8 0 0 0 14.9 3M20 20v-4h-4"/>
+                </svg>
+            </button>
         </div><!-- /#🔄 test review 🔄 -->
 
         <!-- 🗣️🩺👂 pronunciation & speaking diagnostic 🗣️🩺👂 -->
-        <div class="pron-speaking-diagnostic-wrapper" id="diagnostic-stage">
+        <div class="pron-speaking-diagnostic-wrapper lesson-stage" id="diagnostic-stage">
             <!-- Progress bar for hearing diagnostic -->
             <div class="progress-container diagnostic-progress-container" id="hearing-progress-container">
                 <div class="progress-bar diagnostic-progress-bar" id="hearing-progress-bar">
@@ -292,6 +304,12 @@
                     <div class="progress-fill diagnostic-progress-fill pronunciation-side-fill" id="pronunciation-progress-fill"></div>
                 </div>
             </div>
+
+            <button class="lesson-next-btn diagnostic-next-btn" data-next-stage="test-review-wrapper" aria-label="Review results" aria-disabled="true" disabled>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M5 12h14M13 6l6 6-6 6"/>
+                </svg>
+            </button>
         </div><!-- /#🗣️🩺👂 pronunciation & speaking diagnostic 🗣️🩺👂 -->
 
     </div><!-- /#assessment-stage -->

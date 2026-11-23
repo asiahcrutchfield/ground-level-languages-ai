@@ -203,11 +203,26 @@ const pronSideFill            = document.querySelector('.pronunciation-side-fill
 const hearingIndicator       = document.querySelector('#hearing-progress-container .progress-indicator');
 const pronIndicator          = document.querySelector('#pronunciation-progress-container .progress-indicator');
 const hearingResults         = [];
+const pronunciationScores    = [];
+const exploredWords           = new Set();
+const lessonStageIds          = ['vocab-stage', 'listening-test', 'pronunciation-test', 'diagnostic-stage', 'test-review-wrapper'];
+const lessonStages            = lessonStageIds.map((id) => document.getElementById(id)).filter(Boolean);
+const vocabNextBtn             = document.querySelector('.vocab-next-btn');
+const diagnosticNextBtn        = document.querySelector('.diagnostic-next-btn');
+const reviewRestartBtn         = document.querySelector('.review-restart-btn');
+let currentStageIdx            = 0;
+let listeningTrialsCompleted  = 0;
+let pronunciationTrialsCompleted = 0;
+let pronunciationRoundWords   = [];
+let pronunciationRoundIndex  = 0;
+let listeningRoundWords      = [];
+let listeningRoundIndex      = 0;
 let hearingPromptStartedAt   = 0;
 let hearingPromptSide        = 0;
 let listeningOffer           = [];
 let listeningOfferWordId     = null;
 let listeningCorrectChoiceId = 'target';
+let listeningChoiceLocked    = true;
 
 function findLessonItem(itemId) {
   return VOCAB.find((item) => item.id === itemId) || null;
@@ -354,6 +369,7 @@ function rotateTo(newIndex) {
   renderCarousel();
   renderBreakdown();
   updateActiveWordPronunciation();
+  markWordExplored(VOCAB[activeIndex].id);
   // Audio-first rule: immediately trigger word audio on rotation
   playAudio(VOCAB[activeIndex].full_audio_url);
 }
@@ -387,6 +403,7 @@ carousel.addEventListener('keydown', (e) => {
 playBtn.addEventListener('click', (e) => {
   e.stopPropagation();
   playBtn.classList.add('playing');
+  markWordExplored(VOCAB[activeIndex].id);
   playAudio(VOCAB[activeIndex].full_audio_url);
   setTimeout(() => playBtn.classList.remove('playing'), 900);
 });
@@ -406,6 +423,7 @@ catBtns.forEach((btn) => {
 function attachShapeListeners(panel) {
   const triggerShape = (item) => {
     if (!item || !item.dataset.audioUrl) return;
+    markWordExplored(VOCAB[activeIndex].id);
     playAudio(item.dataset.audioUrl);
     item.classList.remove('popping');
     void item.offsetWidth; // force reflow
@@ -750,8 +768,10 @@ async function finishRecordingProcessing() {
     const match = compareWaveformPeaks(peaks, targetPeaks);
     if (match !== null) {
       // This is an acoustic-envelope similarity proxy, not phoneme recognition.
-      setProgress(pronFill, pronIndicator, match);
-      if (pronSideFill) pronSideFill.style.height = `${match * 100}%`;
+      pronunciationScores.push(match);
+      const averageMatch = pronunciationScores.reduce((sum, score) => sum + score, 0) / pronunciationScores.length;
+      setProgress(pronFill, pronIndicator, averageMatch);
+      if (pronSideFill) pronSideFill.style.height = `${averageMatch * 100}%`;
       updateReviewBadge(match >= 0.82);
     }
 
@@ -762,6 +782,7 @@ async function finishRecordingProcessing() {
     // Immediate playback for instant auditory feedback
     playAudio(recordedAudioUrl);
     pulseWaveform(pronPracticeSoundwave);
+    handlePronunciationRecorded();
   } catch (err) {
     console.warn('Error processing recording audio buffer:', err);
   }
@@ -807,51 +828,23 @@ function updateActiveWordPronunciation() {
    is the next concrete word. Latency and accuracy stay in the diagnostic UI. */
 function setupListeningTest() {
   if (!listeningStage || !listeningPrompt || listeningChoices.length !== 2) return;
-  const buildOffer = () => {
-    const currentWord = VOCAB[activeIndex];
-    const assessment = currentWord && getListeningAssessment(currentWord.id);
-    const target = { id: 'target', isTarget: true, audioUrl: getTargetAudio(currentWord) };
-    const distractorSpec = assessment?.choices?.find((choice) => choice.kind === 'distractor');
-    const foil = distractorSpec
-      ? { id: distractorSpec.id, isTarget: false, audioUrl: distractorSpec.audio_url }
-      : { id: 'foil', isTarget: false, audioUrl: getTargetAudio(VOCAB[(activeIndex + 1) % VOCAB.length]) };
-    listeningOffer = Math.random() < 0.5 ? [target, foil] : [foil, target];
-    listeningOfferWordId = currentWord?.id || null;
-    listeningCorrectChoiceId = assessment?.correct_choice_id || 'target';
-  };
-  const promptAudio = () => {
-    if (!VOCAB[activeIndex]) return;
-    buildOffer();
-    hearingPromptSide = listeningOffer.findIndex((option) => option.isTarget);
+  const replayPrompt = () => {
+    if (listeningChoiceLocked) return;
+    const word = findLessonItem(listeningOfferWordId);
+    if (!word) return;
     hearingPromptStartedAt = performance.now();
-    playAudio(getTargetAudio(VOCAB[activeIndex]));
+    playAudio(getTargetAudio(word));
     listeningPrompt.classList.add('playing');
     pulseWaveform(listeningPrompt);
   };
-  listeningPrompt.addEventListener('click', promptAudio);
+  listeningPrompt.addEventListener('click', replayPrompt);
   listeningPrompt.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); promptAudio(); }
+    if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); replayPrompt(); }
   });
   listeningChoices.forEach((choice, side) => {
-    const choose = () => {
-      if (!listeningOffer.length || listeningOfferWordId !== VOCAB[activeIndex]?.id) buildOffer();
-      const selectedChoice = listeningOffer[side];
-      if (!selectedChoice) return;
-      playAudio(selectedChoice.audioUrl);
-      choice.classList.remove('correct', 'incorrect', 'selected');
-      const isCorrect = selectedChoice.id === listeningCorrectChoiceId && side === hearingPromptSide;
-      choice.classList.add(isCorrect ? 'correct' : 'incorrect', 'selected');
-      const latency = hearingPromptStartedAt ? performance.now() - hearingPromptStartedAt : 0;
-      if (hearingPromptStartedAt) hearingResults.push({ correct: isCorrect, latency });
-      const accuracy = hearingResults.length ? hearingResults.filter((result) => result.correct).length / hearingResults.length : 0;
-      setProgress(hearingFill, hearingIndicator, accuracy);
-      if (hearingSideFill) hearingSideFill.style.height = `${accuracy * 100}%`;
-      window.setTimeout(() => choice.classList.remove('correct', 'incorrect', 'selected'), 900);
-      hearingPromptStartedAt = 0;
-    };
-    choice.addEventListener('click', choose);
+    choice.addEventListener('click', () => completeListeningTrial(choice, side));
     choice.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); choose(); }
+      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); completeListeningTrial(choice, side); }
     });
   });
 }
@@ -860,6 +853,189 @@ function setProgress(fill, indicator, score) {
   const percent = Math.max(0, Math.min(100, score * 100));
   if (fill) fill.style.height = `${percent}%`;
   if (indicator) indicator.style.bottom = `${percent}%`;
+}
+
+function updateStageDots() {
+  stageNavDots.forEach((dot, index) => {
+    dot.classList.toggle('active', index === currentStageIdx);
+    dot.classList.toggle('completed', index < currentStageIdx);
+  });
+}
+
+function goToStage(stageId) {
+  const nextIndex = lessonStageIds.indexOf(stageId);
+  if (nextIndex < 0) return;
+  currentStageIdx = nextIndex;
+  lessonStages.forEach((stage) => stage.classList.toggle('flow-active', stage.id === stageId));
+  updateStageDots();
+
+  if (stageId === 'listening-test') startListeningRound();
+  if (stageId === 'pronunciation-test') startPronunciationRound();
+  if (stageId === 'diagnostic-stage') startDiagnosticOverview();
+  if (stageId === 'test-review-wrapper') updateActiveWordPronunciation();
+}
+
+function markWordExplored(wordId) {
+  if (!wordId) return;
+  exploredWords.add(wordId);
+  if (exploredWords.size >= 3 && vocabNextBtn) {
+    vocabNextBtn.disabled = false;
+    vocabNextBtn.setAttribute('aria-disabled', 'false');
+    vocabNextBtn.classList.add('unlocked');
+  }
+}
+
+function startListeningRound() {
+  const primed = Array.from(exploredWords);
+  listeningRoundWords = (primed.length >= 3 ? primed : VOCAB.map((word) => word.id)).slice(0, 3);
+  listeningRoundIndex = 0;
+  listeningTrialsCompleted = 0;
+  hearingResults.length = 0;
+  hearingPromptStartedAt = 0;
+  listeningChoiceLocked = true;
+  listeningStage?.classList.remove('round-complete');
+  listeningChoices.forEach((choice) => choice.classList.remove('correct', 'incorrect', 'selected'));
+  setProgress(hearingFill, hearingIndicator, 0);
+  if (hearingSideFill) hearingSideFill.style.height = '0%';
+  startListeningTrial();
+}
+
+function startListeningTrial() {
+  const word = findLessonItem(listeningRoundWords[listeningRoundIndex]);
+  if (!word) return;
+  const assessment = getListeningAssessment(word.id);
+  const target = { id: 'target', isTarget: true, audioUrl: getTargetAudio(word) };
+  const distractorSpec = assessment?.choices?.find((choice) => choice.kind === 'distractor');
+  const foil = distractorSpec
+    ? { id: distractorSpec.id, isTarget: false, audioUrl: distractorSpec.audio_url }
+    : { id: 'foil', isTarget: false, audioUrl: getTargetAudio(VOCAB[(activeIndex + 1) % VOCAB.length]) };
+  listeningOffer = Math.random() < 0.5 ? [target, foil] : [foil, target];
+  listeningOfferWordId = word.id;
+  listeningCorrectChoiceId = assessment?.correct_choice_id || 'target';
+  hearingPromptSide = listeningOffer.findIndex((choice) => choice.isTarget);
+  listeningChoiceLocked = false;
+  hearingPromptStartedAt = performance.now();
+  playAudio(getTargetAudio(word));
+  listeningPrompt?.classList.add('playing');
+  pulseWaveform(listeningPrompt);
+}
+
+function completeListeningTrial(choice, side) {
+  if (listeningChoiceLocked || !hearingPromptStartedAt) return;
+  const selected = listeningOffer[side];
+  if (!selected) return;
+  listeningChoiceLocked = true;
+  playAudio(selected.audioUrl);
+  const correct = selected.id === listeningCorrectChoiceId && side === hearingPromptSide;
+  choice.classList.remove('correct', 'incorrect', 'selected');
+  choice.classList.add(correct ? 'correct' : 'incorrect', 'selected');
+  hearingResults.push({ correct, latency: performance.now() - hearingPromptStartedAt });
+  hearingPromptStartedAt = 0;
+  listeningTrialsCompleted += 1;
+
+  const accuracy = hearingResults.filter((result) => result.correct).length / hearingResults.length;
+  setProgress(hearingFill, hearingIndicator, accuracy);
+  if (hearingSideFill) hearingSideFill.style.height = `${accuracy * 100}%`;
+
+  if (listeningTrialsCompleted >= 3) {
+    listeningStage?.classList.add('round-complete');
+    window.setTimeout(() => goToStage('pronunciation-test'), 700);
+    return;
+  }
+  window.setTimeout(() => {
+    choice.classList.remove('correct', 'incorrect', 'selected');
+    listeningRoundIndex += 1;
+    startListeningTrial();
+  }, 700);
+}
+
+function setActiveWordById(wordId, playTarget = false) {
+  const nextIndex = VOCAB.findIndex((word) => word.id === wordId);
+  if (nextIndex < 0) return;
+  activeIndex = nextIndex;
+  renderCarousel();
+  renderBreakdown();
+  updateActiveWordPronunciation();
+  if (playTarget) playAudio(getTargetAudio(VOCAB[activeIndex]));
+}
+
+function startPronunciationRound() {
+  const primed = Array.from(exploredWords);
+  pronunciationRoundWords = (primed.length >= 2 ? primed : VOCAB.map((word) => word.id)).slice(0, 2);
+  pronunciationRoundIndex = 0;
+  pronunciationTrialsCompleted = 0;
+  pronunciationScores.length = 0;
+  if (pronFill) pronFill.style.height = '0%';
+  setProgress(null, pronIndicator, 0);
+  if (pronSideFill) pronSideFill.style.height = '0%';
+  setActiveWordById(pronunciationRoundWords[0], true);
+}
+
+function handlePronunciationRecorded() {
+  if (lessonStageIds[currentStageIdx] !== 'pronunciation-test') return;
+  pronunciationTrialsCompleted += 1;
+  if (pronunciationTrialsCompleted >= 2) {
+    window.setTimeout(() => goToStage('diagnostic-stage'), 850);
+    return;
+  }
+  window.setTimeout(() => {
+    pronunciationRoundIndex += 1;
+    setActiveWordById(pronunciationRoundWords[pronunciationRoundIndex], true);
+  }, 750);
+}
+
+function startDiagnosticOverview() {
+  const hearingAccuracy = hearingResults.length
+    ? hearingResults.filter((result) => result.correct).length / hearingResults.length
+    : 0;
+  const pronunciationMatch = pronunciationScores.length
+    ? pronunciationScores.reduce((sum, score) => sum + score, 0) / pronunciationScores.length
+    : 0;
+  setProgress(hearingFill, hearingIndicator, hearingAccuracy);
+  setProgress(pronFill, pronIndicator, pronunciationMatch);
+  if (hearingSideFill) hearingSideFill.style.height = `${hearingAccuracy * 100}%`;
+  if (pronSideFill) pronSideFill.style.height = `${pronunciationMatch * 100}%`;
+  diagnosticNextBtn?.classList.add('unlocked');
+  if (diagnosticNextBtn) {
+    diagnosticNextBtn.disabled = false;
+    diagnosticNextBtn.setAttribute('aria-disabled', 'false');
+  }
+}
+
+function restartLessonFlow() {
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+    currentAudio = null;
+  }
+  Object.values(userRecordings).forEach((recording) => URL.revokeObjectURL(recording.audioUrl));
+  Object.keys(userRecordings).forEach((wordId) => delete userRecordings[wordId]);
+  exploredWords.clear();
+  hearingResults.length = 0;
+  pronunciationScores.length = 0;
+  listeningTrialsCompleted = 0;
+  pronunciationTrialsCompleted = 0;
+  activeIndex = 0;
+  vocabNextBtn?.classList.remove('unlocked');
+  if (vocabNextBtn) {
+    vocabNextBtn.disabled = true;
+    vocabNextBtn.setAttribute('aria-disabled', 'true');
+  }
+  diagnosticNextBtn?.classList.remove('unlocked');
+  if (diagnosticNextBtn) {
+    diagnosticNextBtn.disabled = true;
+    diagnosticNextBtn.setAttribute('aria-disabled', 'true');
+  }
+  renderCarousel();
+  renderBreakdown();
+  setActiveCategory('phoneme');
+  setProgress(hearingFill, hearingIndicator, 0);
+  setProgress(pronFill, pronIndicator, 0);
+  if (hearingSideFill) hearingSideFill.style.height = '0%';
+  if (pronSideFill) pronSideFill.style.height = '0%';
+  updateReviewBadge(false);
+  updateActiveWordPronunciation();
+  goToStage('vocab-stage');
 }
 
 function attachPronunciationAndReviewListeners() {
@@ -938,33 +1114,16 @@ function attachPronunciationAndReviewListeners() {
 function setupStageNav() {
   stageNavDots.forEach((dot) => {
     dot.addEventListener('click', () => {
-      const targetId = dot.dataset.target;
-      const targetEl = document.getElementById(targetId);
-      if (targetEl) {
-        targetEl.scrollIntoView({ behavior: 'smooth' });
-      }
+      goToStage(dot.dataset.target);
     });
   });
-
-  const sections = ['vocab-stage', 'listening-test', 'pronunciation-test', 'diagnostic-stage', 'test-review-wrapper']
-    .map((id) => document.getElementById(id))
-    .filter(Boolean);
-
-  if ('IntersectionObserver' in window) {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && entry.intersectionRatio >= 0.45) {
-            stageNavDots.forEach((d) => {
-              d.classList.toggle('active', d.dataset.target === entry.target.id);
-            });
-          }
-        });
-      },
-      { threshold: 0.5 }
-    );
-    sections.forEach((sec) => observer.observe(sec));
-  }
+  vocabNextBtn?.addEventListener('click', () => goToStage('listening-test'));
+  diagnosticNextBtn?.addEventListener('click', () => goToStage('test-review-wrapper'));
+  reviewRestartBtn?.addEventListener('click', restartLessonFlow);
+  document.body.classList.add('guided-flow');
+  lessonStages.forEach((stage) => stage.classList.toggle('flow-active', stage.id === 'vocab-stage'));
+  currentStageIdx = 0;
+  updateStageDots();
 }
 
 /* ============================================================
