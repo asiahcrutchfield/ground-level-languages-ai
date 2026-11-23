@@ -388,7 +388,6 @@ playBtn.addEventListener('click', (e) => {
   e.stopPropagation();
   playBtn.classList.add('playing');
   playAudio(VOCAB[activeIndex].full_audio_url);
-  pulseWaveform(pronTargetSoundwave);
   setTimeout(() => playBtn.classList.remove('playing'), 900);
 });
 
@@ -763,7 +762,6 @@ async function finishRecordingProcessing() {
     // Immediate playback for instant auditory feedback
     playAudio(recordedAudioUrl);
     pulseWaveform(pronPracticeSoundwave);
-    pulseWaveform(userReviewSoundwave);
   } catch (err) {
     console.warn('Error processing recording audio buffer:', err);
   }
@@ -870,49 +868,55 @@ function attachPronunciationAndReviewListeners() {
     if (e) e.stopPropagation();
     const currentWord = VOCAB[activeIndex];
     playAudio(getTargetAudio(currentWord));
-    pulseWaveform(pronTargetSoundwave);
-    pulseWaveform(targetReviewSoundwave);
   }
 
   if (pronTarget) {
-    pronTarget.addEventListener('click', playTargetAudio);
+    pronTarget.addEventListener('click', (event) => {
+      playTargetAudio(event);
+      pulseWaveform(pronTargetSoundwave);
+    });
   }
   if (targetReviewIcon) {
-    targetReviewIcon.addEventListener('click', playTargetAudio);
+    targetReviewIcon.addEventListener('click', (event) => {
+      playTargetAudio(event);
+      pulseWaveform(targetReviewSoundwave);
+    });
   }
   if (targetReviewSoundwave) {
-    targetReviewSoundwave.addEventListener('click', playTargetAudio);
+    targetReviewSoundwave.addEventListener('click', (event) => {
+      playTargetAudio(event);
+      pulseWaveform(targetReviewSoundwave);
+    });
   }
 
   // Learner practice replay
-  function playUserRecordedAudio(e) {
+  function playUserRecordedAudio(e, section) {
     if (e) e.stopPropagation();
     const currentWord = VOCAB[activeIndex];
     const rec = userRecordings[currentWord.id];
     if (rec && rec.audioUrl) {
       playAudio(rec.audioUrl);
-      pulseWaveform(pronPracticeSoundwave);
-      pulseWaveform(userReviewSoundwave);
+      pulseWaveform(section === 'review' ? userReviewSoundwave : pronPracticeSoundwave);
     } else {
       const mockAttempt = getPronunciationAssessment(currentWord.id)?.mock_attempt_audio_url;
       if (mockAttempt) {
         playAudio(mockAttempt);
-        pulseWaveform(pronPracticeSoundwave);
-        pulseWaveform(userReviewSoundwave);
+        pulseWaveform(section === 'review' ? userReviewSoundwave : pronPracticeSoundwave);
       } else {
         playTargetAudio();
+        pulseWaveform(section === 'review' ? targetReviewSoundwave : pronTargetSoundwave);
       }
     }
   }
 
   if (pronPractice) {
-    pronPractice.addEventListener('click', playUserRecordedAudio);
+    pronPractice.addEventListener('click', (event) => playUserRecordedAudio(event, 'pronunciation'));
   }
   if (userReviewIcon) {
-    userReviewIcon.addEventListener('click', playUserRecordedAudio);
+    userReviewIcon.addEventListener('click', (event) => playUserRecordedAudio(event, 'review'));
   }
   if (userReviewSoundwave) {
-    userReviewSoundwave.addEventListener('click', playUserRecordedAudio);
+    userReviewSoundwave.addEventListener('click', (event) => playUserRecordedAudio(event, 'review'));
   }
 
   // Microphone toggle button
