@@ -1116,3 +1116,143 @@ span.progress-dot { display: block; }
   .diagnostic-progress-container, .diagnostic-progress-bar { width: 24px !important; flex-basis: 24px; }
   .diagnostic-progress-bar { height: 190px; }
 }
+
+/* Guided mode keeps one stage on screen while the step dots remain demo navigation. */
+body.guided-flow {
+  height: 100vh;
+  overflow: hidden;
+  scroll-snap-type: none;
+}
+body.guided-flow #assessment-stage {
+  position: static;
+  width: auto;
+  height: 0;
+  min-height: 0;
+  overflow: visible;
+}
+body.guided-flow .lesson-stage {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  width: 100vw;
+  height: 100vh;
+  min-height: 100vh;
+  margin: 0;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(12px);
+  scroll-snap-align: none;
+  transition: opacity .35s ease, transform .35s ease, visibility 0s linear .35s;
+}
+body.guided-flow .lesson-stage.flow-active {
+  z-index: 2;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+  transition-delay: 0s;
+}
+/* ID-specific rules keep the active panel visible even alongside stage ID rules. */
+body.guided-flow #vocab-stage,
+body.guided-flow #assessment-stage > .lesson-stage {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  min-height: 100vh !important;
+  margin: 0 !important;
+}
+body.guided-flow #vocab-stage:not(.flow-active),
+body.guided-flow #assessment-stage > .lesson-stage:not(.flow-active) {
+  display: none !important;
+}
+body.guided-flow #vocab-stage.flow-active,
+body.guided-flow #listening-test.flow-active,
+body.guided-flow #pronunciation-test.flow-active,
+body.guided-flow #diagnostic-stage.flow-active {
+  display: flex !important;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  z-index: 2;
+  animation: lessonStageEnter .32s ease-out both;
+}
+body.guided-flow #test-review-wrapper.flow-active {
+  display: grid !important;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  z-index: 2;
+  animation: lessonStageEnter .32s ease-out both;
+}
+
+.lesson-next-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-circle);
+  background: var(--card-bg);
+  border: 2.5px solid var(--primary);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-btn);
+  transition: transform .25s var(--ease), background-color .2s, color .2s, opacity .3s;
+  opacity: .45;
+  pointer-events: none;
+}
+.lesson-next-btn:disabled { cursor: default; }
+.lesson-next-btn.unlocked {
+  opacity: 1;
+  pointer-events: auto;
+  animation: gentleReadyPulse 2.2s ease-in-out infinite;
+}
+.lesson-next-btn.unlocked:hover {
+  transform: scale(1.12);
+  background: var(--primary);
+  color: var(--alabaster);
+}
+.lesson-next-btn svg { width: 26px; height: 26px; }
+.vocab-next-btn { position: absolute; right: 84px; bottom: 24px; }
+.diagnostic-next-btn {
+  position: absolute;
+  bottom: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.diagnostic-next-btn.unlocked:hover { transform: translateX(-50%) scale(1.12); }
+.review-restart-btn {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.review-restart-btn:hover { transform: translateX(-50%) scale(1.12); }
+.stage-nav-dot.completed { background: var(--primary); border-color: var(--alabaster); }
+.stage-nav-dot:not(.active):not(.completed) { background: rgba(255,255,255,.22); border-color: rgba(239,236,226,.58); }
+
+@keyframes gentleReadyPulse {
+  0%, 100% { box-shadow: 0 4px 16px rgba(45, 106, 79, .30); }
+  50% { box-shadow: 0 0 0 8px rgba(82, 183, 136, .28), 0 4px 16px rgba(45, 106, 79, .35); }
+}
+@keyframes stageCompletionGlow {
+  0%, 100% { box-shadow: inset 0 0 0 0 rgba(82,183,136,0); }
+  45% { box-shadow: inset 0 0 0 12px rgba(82,183,136,.5); }
+}
+@keyframes lessonStageEnter {
+  from { opacity: .55; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+#listening-test.round-complete { animation: stageCompletionGlow .7s ease-out; }
+
+@media (max-width: 600px) {
+  .vocab-next-btn { right: 72px; bottom: 18px; }
+  .diagnostic-next-btn { bottom: 20px; }
+  .review-restart-btn { bottom: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.guided-flow .lesson-stage,
+  .lesson-next-btn.unlocked,
+  #listening-test.round-complete { transition-duration: .01ms; animation-duration: .01ms; }
+}
