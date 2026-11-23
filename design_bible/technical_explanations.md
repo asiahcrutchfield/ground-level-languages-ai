@@ -1,9 +1,10 @@
 # Technical Explanations
 
 ## Audio & AI Pipeline (`gll_intro_to_ai.ipynb` -> `lesson_data.json`)
-- **Phone Detection (`Allosaurus`):** Listens to native audio and breaks words down into individual speech sounds without showing any written text or IPA symbols on screen. Each sound is grouped into a simple shape category (`consonant` = terracotta circle `●`, `vowel` = moss-green triangle `▲`) and paired with a clear reference sound.
-- **Syllable Timing (`MMS_FA` / Energy Peaks):** Finds where each syllable starts and ends so the app can play single syllables and size the syllable bars (`width_px`) to match how long they sound.
-- **Tone & Humming (`TorchCREPE`):** Tracks voice pitch ($F_0$) and creates a humming-only audio track (`_hum.wav`) so users can hear the melody of a word without consonants or vowels getting in the way.
+- **Forced Phoneme Alignment (`Torchaudio MMS_FA` + `WORD_PHONEME_LEXICON`):** Aligns each word's native audio to its target phoneme sequence (`WORD_PHONEME_LEXICON`) with millisecond precision to create time-aligned phoneme slices (`_p1.wav`, `_p2.wav`, etc.) without showing any written text or IPA symbols on screen.
+- **Reference Phoneme Clips (Oxford IPA Audio Collection):** Downloads clean, isolated phoneme audio files (`audio/phonemes/*.wav` from the Oxford phoneme audio collection) and pairs each sound in the word with its corresponding visual shape (`consonant` = terracotta circle `●`, `vowel` = moss-green triangle `▲`).
+- **Syllable Timing (`Librosa` & `SciPy`):** Uses audio trimming and energy-peak detection to find where each syllable starts and ends so the app can play single syllables (`_s1.wav`) and size the syllable bars (`width_px`) to match how long they sound.
+- **Tone & Humming (`TorchCREPE`):** Estimates voice pitch (fundamental frequency, $F_0$) and voicing confidence to create a simplified humming-only audio track (`_hum.wav`) and classify tone movement (`solid`, `ring`, `dot`) so users can hear the melody of a word without consonants or vowels getting in the way.
 
 ---
 
@@ -12,17 +13,17 @@
 ### Listening Assessment (`#listening-test`)
 
 #### Purpose & Goal
-- **Purpose:** Checks if a user can accurately hear the difference between sounds, words, phrases or tones without reading any text.
-- **Goal:** Shows one audio-only question (`.listening-question`) and two audio-only choices (`.listening-choice`, `.choice-1`, `.choice-2`). For this prototype, questions use minimal pairs or words from the current vocabulary/story section. On the backend, the AI records two hidden scores (never shown as numbers on screen):
-  - **Accuracy:** Whether the user picked the choice that matches the question audio.
+- **Purpose:** Checks if a user can accurately hear the difference between sounds, words, phrases, or tones without reading any text.
+- **Goal:** Shows one audio-only question (`.listening-question`) and two audio-only choices (`.listening-choice`, `.choice-1`, `.choice-2`) loaded from `assessment_data.json`. For this prototype, questions use target words paired with minimal-pair distractors (`audio/test_bank/distractors/`). On the backend, the system records two hidden scores (never shown as numbers on screen):
+  - **Accuracy:** Whether the user picked the choice that matches the target audio.
   - **Reaction Speed (`ms`):** How fast the user answered after hearing the prompt, which helps show if they are processing sounds naturally in real time.
-- **Example:** The question plays the *ae* sound from *cat*. The two choices play *cat* and *cot*. If the user picks *cat*, the backend marks it as accurate and tracks which sounds the user still struggles to hear.
+- **Example:** The question plays the *ae* sound from *cat* (or the target word *cat*). The two choices play *cat* and *cot*. If the user picks *cat*, the backend marks it as accurate and tracks which sounds the user still struggles to hear.
 
 ### Pronunciation Assessment (`#pronunciation-test`)
 
 #### Purpose & Goal
 - **Purpose:** Checks if a user can accurately say a sound, word, or phrase out loud.
-- **Goal:** Takes the user's voice recording (`.wav`) and compares it against the native target audio (`#pronunciation-target`) using an AI model (`Wav2Vec2-XLSR-53` / `TorchCREPE`). Only words or sounds from the current vocabulary or story section are used. The AI outputs hidden backend scores that:
+- **Goal:** Takes the user's voice recording (`.wav`)—or a pre-recorded sample from `audio/test_bank/mock_attempts/` when testing without a microphone—and compares it against the native target audio (`#pronunciation-target`) using `MMS_FA` phoneme alignment and `TorchCREPE` pitch contours. Only words or sounds from the current vocabulary or story section are used. The AI outputs hidden backend scores that:
   - Measure how closely the user's speech and pitch match the target.
   - **Pinpoint exact sound errors:** Find *which specific sound* inside the word was off (for example, the middle vowel) so the app can highlight that shape later without using text or IPA.
 - **Example:** The target sound is *cat*, but the user says *cot*. The AI detects that the first and last sounds match, while the middle vowel sound diverged.
@@ -34,7 +35,7 @@
 #### Purpose & Goal
 - **Purpose:** After finishing the listening and pronunciation tests, users see a 3-column screen to compare their answers against the target sounds:
   - **Column 1 (`#user-review-column`):** A list of all the user's recorded answers or chosen sounds (`#user-review-item`).
-  - **Column 2 (`#results-review-column`):** A visual status badge (`#results-badge`) for each row—such as a green check (`✔️`) when the sound matches, or a gentle colored ring pulse when a sound needs practice (avoiding harsh red `❌` marks to keep stress low, per `design_philosophy.md`). Future updates may replace this with a smooth match meter instead of a simple binary yes/no badge.
+  - **Column 2 (`#results-review-column`):** A visual status badge (`#results-badge`) for each row—such as a green check (`✔️`) when the sound matches, or a gentle colored ring pulse when a sound needs practice (avoiding harsh red `❌` marks to keep stress low, per `design_philosophy.md`). Future updates may replace this with a smooth match meter instead of a simple yes/no badge.
   - **Column 3 (`#target-review-column`):** A list of all the native target sounds, words, or phrases (`#target-review-item`) the user was measured against.
   - Each row lines up **1 user answer**, **1 result badge**, and **1 target sound**.
 - **Goal:** Lets the user tap and replay their own recording right next to the native target so they can hear where to improve.

@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "lesson_manifest": "lesson_data.json",
+  "audio_root": "audio/test_bank/",
+  "listening_assessment": {
+    "selection": "one_target_one_distractor",
+    "prompt_audio": "target_word_audio",
+    "items": [
+      {
+        "id": "listen_cat_cot",
+        "target_lesson_item_id": "cat",
+        "target_audio_source": "lesson_data.items[].full_audio_url",
+        "choices": [
+          { "id": "target", "kind": "target", "source": "lesson_item_audio" },
+          { "id": "foil", "kind": "distractor", "audio_url": "audio/test_bank/distractors/cot.wav" }
+        ],
+        "correct_choice_id": "target"
+      },
+      {
+        "id": "listen_dog_dug",
+        "target_lesson_item_id": "dog",
+        "target_audio_source": "lesson_data.items[].full_audio_url",
+        "choices": [
+          { "id": "target", "kind": "target", "source": "lesson_item_audio" },
+          { "id": "foil", "kind": "distractor", "audio_url": "audio/test_bank/distractors/dug.wav" }
+        ],
+        "correct_choice_id": "target"
+      },
+      {
+        "id": "listen_walk_woke",
+        "target_lesson_item_id": "walk",
+        "target_audio_source": "lesson_data.items[].full_audio_url",
+        "choices": [
+          { "id": "target", "kind": "target", "source": "lesson_item_audio" },
+          { "id": "foil", "kind": "distractor", "audio_url": "audio/test_bank/distractors/woke.wav" }
+        ],
+        "correct_choice_id": "target"
+      },
+      {
+        "id": "listen_jump_chump",
+        "target_lesson_item_id": "jump",
+        "target_audio_source": "lesson_data.items[].full_audio_url",
+        "choices": [
+          { "id": "target", "kind": "target", "source": "lesson_item_audio" },
+          { "id": "foil", "kind": "distractor", "audio_url": "audio/test_bank/distractors/chump.wav" }
+        ],
+        "correct_choice_id": "target"
+      },
+      {
+        "id": "listen_tree_three",
+        "target_lesson_item_id": "tree",
+        "target_audio_source": "lesson_data.items[].full_audio_url",
+        "choices": [
+          { "id": "target", "kind": "target", "source": "lesson_item_audio" },
+          { "id": "foil", "kind": "distractor", "audio_url": "audio/test_bank/distractors/three.wav" }
+        ],
+        "correct_choice_id": "target"
+      }
+    ]
+  },
+  "pronunciation_assessment": {
+    "items": [
+      {
+        "id": "speak_cat",
+        "target_lesson_item_id": "cat",
+        "target_audio_source": "lesson_data.items[].full_audio_url",
+        "target_phoneme_ids": ["cat_p1", "cat_p2", "cat_p3"],
+        "mock_attempt_audio_url": "audio/test_bank/mock_attempts/cat_as_cot.wav"
+      },
+      {
+        "id": "speak_dog",
+        "target_lesson_item_id": "dog",
+        "target_audio_source": "lesson_data.items[].full_audio_url",
+        "target_phoneme_ids": ["dog_p1", "dog_p2", "dog_p3"],
+        "mock_attempt_audio_url": "audio/test_bank/mock_attempts/dog_as_dug.wav"
+      },
+      {
+        "id": "speak_walk",
+        "target_lesson_item_id": "walk",
+        "target_audio_source": "lesson_data.items[].full_audio_url",
+        "target_phoneme_ids": ["walk_p1", "walk_p2", "walk_p3"],
+        "mock_attempt_audio_url": "audio/test_bank/mock_attempts/walk_as_woke.wav"
+      },
+      {
+        "id": "speak_jump",
+        "target_lesson_item_id": "jump",
+        "target_audio_source": "lesson_data.items[].full_audio_url",
+        "target_phoneme_ids": ["jump_p1", "jump_p2", "jump_p3", "jump_p4"],
+        "mock_attempt_audio_url": "audio/test_bank/mock_attempts/jump_as_chump.wav"
+      },
+      {
+        "id": "speak_tree",
+        "target_lesson_item_id": "tree",
+        "target_audio_source": "lesson_data.items[].full_audio_url",
+        "target_phoneme_ids": ["tree_p1", "tree_p2", "tree_p3"],
+        "mock_attempt_audio_url": "audio/test_bank/mock_attempts/tree_as_three.wav"
+      }
+    ]
+  }
+}
