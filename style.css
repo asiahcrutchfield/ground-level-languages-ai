@@ -5,16 +5,19 @@
 
 /* ── Design Tokens ── */
 :root {
-  /* Palette */
-  --bg:            #4A7C59; /* garden green — rich but not harsh */
-  --bg-gradient-a: rgba(82,183,136,0.18);
-  --bg-gradient-b: rgba(45,106,79,0.25);
-  --card-bg:       #EFECE2; /* sandstone — warm contrast against green */
-  --border:        #C2BDA4; /* slightly warmer stone */
-  --primary:       #2D6A4F; /* deep forest green */
-  --active-state:  #2A85A8; /* river teal */
-  --consonant:     #C86D51; /* terracotta */
+  /* Palette — Ground Level Languages Botanical System */
+  --bg:            #4A7C59; /* garden green canvas */
+  --alabaster:     #F7F4EB; /* warm alabaster canvas highlights */
+  --card-bg:       #EFECE2; /* sandstone cards */
+  --border:        #D3CEB6; /* soft stone borders */
+  --stone-border:  #D3CEB6; /* soft stone borders */
+  --primary:       #2D6A4F; /* deep forest green (native/target) */
+  --forest-green:  #2D6A4F; /* deep forest green (target accent) */
+  --consonant:     #C86D51; /* terracotta (learner practice & recording) */
+  --terracotta:    #C86D51; /* terracotta */
   --vowel:         #52B788; /* moss green */
+  --moss-green:    #52B788; /* moss green */
+  --active-state:  #2A85A8; /* river teal */
   --syllable-clr:  #E09F3E; /* ochre amber */
   --tone-clr:      #2A85A8; /* river teal */
   --text-hidden:   transparent;
@@ -41,12 +44,18 @@
   padding: 0;
 }
 
-html, body {
+html {
+  scroll-behavior: smooth;
+}
+
+body {
   height: 100%;
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   background-color: var(--bg);
   color: var(--primary);
-  overflow: hidden; /* single-screen app */
+  overflow-x: hidden;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
 }
 
 /* NO text anywhere — belt-and-suspenders */
@@ -67,6 +76,45 @@ button {
 }
 
 /* ============================================================
+   🧭 FLOATING STAGE NAV (Zero-Text Botanical Dots)
+   ============================================================ */
+.stage-nav {
+  position: fixed;
+  right: 22px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  z-index: 100;
+  background: rgba(239, 236, 226, 0.40);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 12px 8px;
+  border-radius: var(--radius-pill);
+  border: 1.5px solid rgba(211, 206, 182, 0.55);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.stage-nav-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-circle);
+  background: rgba(255, 255, 255, 0.45);
+  border: 2px solid var(--primary);
+  cursor: pointer;
+  transition: all 0.25s var(--ease);
+}
+
+.stage-nav-dot:hover,
+.stage-nav-dot.active {
+  background: var(--active-state);
+  border-color: var(--alabaster);
+  transform: scale(1.35);
+  box-shadow: 0 2px 8px rgba(42, 133, 168, 0.45);
+}
+
+/* ============================================================
    VOCAB STAGE — full-screen shell
    ============================================================ */
 #vocab-stage {
@@ -76,9 +124,13 @@ button {
   justify-content: center;
   gap: 48px;
   width: 100vw;
+  min-height: 100vh;
   height: 100vh;
   padding: 24px;
   background: var(--bg);
+  scroll-snap-align: start;
+  position: relative;
+  box-sizing: border-box;
 
   /* Garden-like layered green depth */
   background-image:
@@ -480,6 +532,409 @@ button {
 }
 
 /* ============================================================
+   📝 ASSESSMENT STAGE & PRONUNCIATION TEST
+   ============================================================ */
+#assessment-stage {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+}
+
+#listening-test,
+.pron-speaking-diagnostic-wrapper {
+  display: none; /* Reserved for separate diagnostic milestone */
+}
+
+/* 🗣️ Pronunciation Test Canvas */
+#pronunciation-test {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100vw;
+  min-height: 100vh;
+  height: 100vh;
+  scroll-snap-align: start;
+  padding: 48px 64px 60px 64px;
+  background: var(--bg);
+  box-sizing: border-box;
+
+  /* Botanical atmospheric gradient */
+  background-image:
+    radial-gradient(ellipse at 85% 15%, rgba(255,255,255,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 15% 85%, rgba(45,106,79,0.40) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 50%, rgba(82,183,136,0.12) 0%, transparent 60%);
+}
+
+/* Top-Right Target Row */
+#pronunciation-target-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+#pronunciation-target {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: var(--radius-card);
+  transition: transform 0.25s var(--ease);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#pronunciation-target:hover {
+  transform: scale(1.04);
+}
+
+#pronunciation-target:active {
+  transform: scale(0.97);
+}
+
+/* Bottom-Left Practice Row */
+#pronunciation-practice-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-top: auto;
+}
+
+#pronunciation-practice {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: var(--radius-card);
+  transition: transform 0.25s var(--ease);
+  width: fit-content;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#pronunciation-practice:hover {
+  transform: scale(1.04);
+}
+
+#pronunciation-practice:active {
+  transform: scale(0.97);
+}
+
+/* ── Circular Symbol Frames ── */
+.symbol-frame {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-circle);
+  background: var(--card-bg);
+  border: 3px solid var(--stone-border);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.symbol-frame:hover {
+  transform: scale(1.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.20);
+}
+
+.symbol-frame:active {
+  transform: scale(0.95);
+}
+
+.symbol-frame svg {
+  width: 56px;
+  height: 56px;
+  display: block;
+}
+
+/* ── Soundwaves ── */
+.soundwave {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 64px;
+  padding: 8px 16px;
+  border-radius: 18px;
+  background: rgba(239, 236, 226, 0.24);
+  border: 1.5px solid rgba(211, 206, 182, 0.38);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.05);
+  min-width: 220px;
+  max-width: 320px;
+  box-sizing: border-box;
+}
+
+.wave-bar {
+  flex: 1;
+  min-width: 4px;
+  max-width: 7px;
+  height: 14%;
+  border-radius: var(--radius-pill);
+  transition: height 0.12s ease-out, background-color 0.2s ease, opacity 0.2s ease;
+}
+
+/* Target waveform: Forest Green */
+.target-bar {
+  background-color: var(--forest-green);
+}
+
+/* Practice waveform: Terracotta */
+.practice-bar {
+  background-color: var(--consonant);
+}
+
+/* Waveform pulse animation during playback */
+.soundwave.playing .wave-bar {
+  animation: waveBarPlay 0.55s ease-in-out infinite alternate;
+}
+
+.soundwave.playing .wave-bar:nth-child(2n) {
+  animation-delay: 0.12s;
+}
+
+.soundwave.playing .wave-bar:nth-child(3n) {
+  animation-delay: 0.24s;
+}
+
+.soundwave.playing .wave-bar:nth-child(4n) {
+  animation-delay: 0.36s;
+}
+
+@keyframes waveBarPlay {
+  0%   { transform: scaleY(0.6); opacity: 0.75; }
+  100% { transform: scaleY(1.35); opacity: 1; }
+}
+
+/* ── Bottom-Center Record Track ── */
+#pronunciation-btn-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 320px;
+  height: 60px;
+  margin: 32px auto 0 auto;
+}
+
+#pronunciation-btn-wrapper::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(211, 206, 182, 0.55);
+  border-radius: var(--radius-pill);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.record-btn {
+  position: relative;
+  z-index: 2;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-circle);
+  background: var(--consonant); /* Terracotta #C86D51 */
+  border: 3.5px solid var(--card-bg);
+  box-shadow: 0 4px 14px rgba(200, 109, 81, 0.45);
+  cursor: pointer;
+  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease), background-color 0.2s;
+}
+
+.record-btn:hover {
+  transform: scale(1.18);
+  box-shadow: 0 6px 20px rgba(200, 109, 81, 0.65);
+}
+
+.record-btn:active {
+  transform: scale(0.92);
+}
+
+/* Botanical Breathing Pulse while recording — calm, zero text, zero countdown */
+.record-btn.recording {
+  background: #B65338;
+  animation: botanicalPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes botanicalPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(200, 109, 81, 0.75);
+  }
+  50% {
+    transform: scale(1.25);
+    box-shadow: 0 0 0 20px rgba(200, 109, 81, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(200, 109, 81, 0.75);
+  }
+}
+
+/* ============================================================
+   🔄 SIDE-BY-SIDE REVIEW STAGE
+   ============================================================ */
+#test-review-wrapper {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 80px 1fr;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  min-height: 100vh;
+  height: 100vh;
+  scroll-snap-align: start;
+  padding: 60px 80px;
+  gap: 32px;
+  background: var(--bg);
+  box-sizing: border-box;
+
+  /* Botanical atmospheric background */
+  background-image:
+    radial-gradient(ellipse at 20% 20%, rgba(255,255,255,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(45,106,79,0.35) 0%, transparent 55%);
+}
+
+.review-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+}
+
+.test-review-item {
+  width: 100%;
+  max-width: 380px;
+  height: 250px;
+  background: var(--card-bg);
+  border: 2px solid var(--stone-border);
+  border-radius: var(--radius-card);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 28px 24px 20px 24px;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.review-soundwave {
+  width: 100%;
+  height: 84px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(211, 206, 182, 0.5);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: transform 0.2s var(--ease);
+}
+
+.review-soundwave:hover {
+  transform: scale(1.02);
+}
+
+/* User review replay icon in lower-left corner */
+#user-review-icon-container {
+  align-self: flex-start;
+  width: 46px;
+  height: 46px;
+  border-radius: var(--radius-circle);
+  background: var(--card-bg);
+  border: 2px solid var(--consonant);
+  color: var(--consonant);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(200, 109, 81, 0.25);
+  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+
+#user-review-icon-container:hover {
+  transform: scale(1.15);
+  box-shadow: 0 4px 14px rgba(200, 109, 81, 0.45);
+}
+
+/* Target review replay icon in lower-right corner */
+#target-review-icon-container {
+  align-self: flex-end;
+  width: 46px;
+  height: 46px;
+  border-radius: var(--radius-circle);
+  background: var(--card-bg);
+  border: 2px solid var(--forest-green);
+  color: var(--forest-green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(45, 106, 79, 0.25);
+  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+
+#target-review-icon-container:hover {
+  transform: scale(1.15);
+  box-shadow: 0 4px 14px rgba(45, 106, 79, 0.45);
+}
+
+.replay-svg {
+  width: 26px;
+  height: 26px;
+  display: block;
+}
+
+/* Center Results Column */
+#results-review-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  height: 250px;
+}
+
+.results-divider-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(211, 206, 182, 0.55);
+}
+
+.results-badge {
+  position: relative;
+  z-index: 2;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-circle);
+  background: var(--card-bg);
+  border: 2px solid var(--stone-border);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s var(--ease);
+}
+
+.results-badge:hover {
+  transform: scale(1.12);
+}
+
+.results-match-svg {
+  width: 34px;
+  height: 34px;
+  display: block;
+}
+
+/* ============================================================
    RESPONSIVE — tablet / smaller screens
    ============================================================ */
 @media (max-width: 600px) {
@@ -494,4 +949,25 @@ button {
     height: 60px;
   }
   .category-svg { width: 34px; height: 34px; }
+
+  #pronunciation-test {
+    padding: 32px 20px 40px 20px;
+  }
+  #test-review-wrapper {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    padding: 32px 20px;
+    gap: 20px;
+    height: auto;
+    min-height: 100vh;
+  }
+  #results-review-column {
+    height: 60px;
+  }
+  .results-divider-line {
+    width: 80%;
+    height: 2px;
+    top: 50%;
+    bottom: auto;
+  }
 }

@@ -17,7 +17,7 @@
   - Refine the frontend layout (`index.html`, `style.css`, `script.js`) from the `Update #2` Figma frames, ensuring 100% zero-text compliance (abstract icons for category switchers, smooth audio-visual transitions, and pulsing botanical highlights for diagnostic feedback).
 
 ## What Was Built
-
+- Replaced previous phoneme extraction model (Wav2Vec2-eSpeak + MMS_FA) to Oxford IPA.
 
 ## What Worked
 

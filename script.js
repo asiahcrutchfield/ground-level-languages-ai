@@ -106,6 +106,12 @@ let VOCAB          = FALLBACK_ITEMS;
 let activeIndex    = 0;
 let activeCategory = 'phoneme'; // 'phoneme' | 'syllable' | 'tone'
 let currentAudio   = null;
+let audioCtx       = null;
+
+// User recorded bank: { [wordId]: { audioUrl, wavBlob, peaks } }
+const userRecordings   = {};
+// Cached target peak data: { [audioUrl]: peaks }
+const targetWaveforms  = {};
 
 /* ============================================================
    3. AUDIO PLAYBACK (Single audio bus, graceful error catch)
@@ -156,15 +162,36 @@ function getPlaceholderSVG(id) {
 /* ============================================================
    5. DOM REFERENCES
    ============================================================ */
-const carousel      = document.getElementById('picture-carousel');
-const cards         = Array.from(carousel.querySelectorAll('.carousel-card'));
-const playBtn       = carousel.querySelector('.carousel-play-btn');
+const carousel               = document.getElementById('picture-carousel');
+const cards                  = Array.from(carousel.querySelectorAll('.carousel-card'));
+const playBtn                = carousel.querySelector('.carousel-play-btn');
 
-const catBtns       = Array.from(document.querySelectorAll('.breakdown-category'));
+const catBtns                = Array.from(document.querySelectorAll('.breakdown-category'));
 
-const phonemePanel  = document.getElementById('phoneme-panel');
-const syllablePanel = document.getElementById('syllable-panel');
-const tonePanel     = document.getElementById('tone-panel');
+const phonemePanel           = document.getElementById('phoneme-panel');
+const syllablePanel          = document.getElementById('syllable-panel');
+const tonePanel              = document.getElementById('tone-panel');
+
+/* Pronunciation Test DOM */
+const pronTarget             = document.getElementById('pronunciation-target');
+const pronTargetSoundwave    = document.getElementById('pronunciation-target-soundwave');
+const pronSymbolFrame        = document.getElementById('pronunciation-symbol-frame');
+
+const pronPractice           = document.getElementById('pronunciation-practice');
+const pronPracticeSoundwave  = document.getElementById('pronunciation-practice-soundwave');
+const pronPracticeSymbolFrame= document.getElementById('pronunciation-practice-symbol-frame');
+
+const recordBtn              = document.getElementById('pronunciation-record-btn');
+
+/* Side-by-Side Review DOM */
+const userReviewSoundwave    = document.getElementById('user-review-soundwave');
+const userReviewIcon         = document.getElementById('user-review-icon-container');
+const targetReviewSoundwave  = document.getElementById('target-review-soundwave');
+const targetReviewIcon       = document.getElementById('target-review-icon-container');
+const resultsBadge           = document.getElementById('results-badge');
+
+/* Floating Stage Nav */
+const stageNavDots           = Array.from(document.querySelectorAll('.stage-nav-dot'));
 
 /* ============================================================
    6. CAROUSEL RENDERING
@@ -294,6 +321,7 @@ function rotateTo(newIndex) {
   activeIndex = (newIndex + VOCAB.length) % VOCAB.length;
   renderCarousel();
   renderBreakdown();
+  updateActiveWordPronunciation();
   // Audio-first rule: immediately trigger word audio on rotation
   playAudio(VOCAB[activeIndex].full_audio_url);
 }
@@ -328,6 +356,7 @@ playBtn.addEventListener('click', (e) => {
   e.stopPropagation();
   playBtn.classList.add('playing');
   playAudio(VOCAB[activeIndex].full_audio_url);
+  pulseWaveform(pronTargetSoundwave);
   setTimeout(() => playBtn.classList.remove('playing'), 900);
 });
 
@@ -372,13 +401,424 @@ attachShapeListeners(syllablePanel);
 attachShapeListeners(tonePanel);
 
 /* ============================================================
-   11. INITIALIZATION & DATA LOADING
+   11. WAVEFORM RENDERING & WEB AUDIO PROCESSING
+   ============================================================ */
+const NUM_WAVE_BARS = 28;
+
+function renderWaveformBars(container, peaks, barClass = 'target-bar') {
+  if (!container) return;
+  container.innerHTML = '';
+  const count = (peaks && peaks.length) ? peaks.length : NUM_WAVE_BARS;
+  for (let i = 0; i < count; i++) {
+    const bar = document.createElement('div');
+    bar.className = `wave-bar ${barClass}`;
+    const heightPercent = peaks && peaks[i] !== undefined
+      ? Math.max(14, Math.min(100, Math.round(peaks[i] * 100)))
+      : 14;
+    bar.style.height = `${heightPercent}%`;
+    container.appendChild(bar);
+  }
+}
+
+function pulseWaveform(container) {
+  if (!container) return;
+  container.classList.remove('playing');
+  void container.offsetWidth; // force reflow
+  container.classList.add('playing');
+  setTimeout(() => container.classList.remove('playing'), 1400);
+}
+
+function extractPeaks(audioBuffer, numBars = NUM_WAVE_BARS) {
+  const channelData = audioBuffer.getChannelData(0);
+  const step = Math.floor(channelData.length / numBars);
+  const rawPeaks = [];
+  let maxPeak = 0;
+
+  for (let i = 0; i < numBars; i++) {
+    const start = i * step;
+    const end = Math.min(start + step, channelData.length);
+    let peak = 0;
+    for (let j = start; j < end; j++) {
+      const val = Math.abs(channelData[j]);
+      if (val > peak) peak = val;
+    }
+    rawPeaks.push(peak);
+    if (peak > maxPeak) maxPeak = peak;
+  }
+
+  const norm = maxPeak > 0 ? maxPeak : 1;
+  return rawPeaks.map((p) => Math.max(0.14, p / norm));
+}
+
+function generateSyntheticPeaks(numBars = NUM_WAVE_BARS) {
+  const peaks = [];
+  for (let i = 0; i < numBars; i++) {
+    const progress = i / (numBars - 1);
+    const envelope = Math.sin(progress * Math.PI);
+    const jitter = 0.65 + Math.sin(i * 1.4) * 0.35;
+    peaks.push(Math.max(0.16, Math.min(1.0, envelope * jitter)));
+  }
+  return peaks;
+}
+
+async function loadTargetWaveform(audioUrl) {
+  if (!audioUrl) return;
+  if (targetWaveforms[audioUrl]) {
+    const peaks = targetWaveforms[audioUrl];
+    renderWaveformBars(pronTargetSoundwave, peaks, 'target-bar');
+    renderWaveformBars(targetReviewSoundwave, peaks, 'target-bar');
+    return;
+  }
+
+  try {
+    const res = await fetch(audioUrl);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const arrayBuffer = await res.arrayBuffer();
+
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') await audioCtx.resume();
+
+    const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+    const peaks = extractPeaks(audioBuffer, NUM_WAVE_BARS);
+    targetWaveforms[audioUrl] = peaks;
+
+    renderWaveformBars(pronTargetSoundwave, peaks, 'target-bar');
+    renderWaveformBars(targetReviewSoundwave, peaks, 'target-bar');
+  } catch (err) {
+    console.warn(`Target waveform decode note for "${audioUrl}":`, err.message || err);
+    const synthetic = generateSyntheticPeaks(NUM_WAVE_BARS);
+    targetWaveforms[audioUrl] = synthetic;
+    renderWaveformBars(pronTargetSoundwave, synthetic, 'target-bar');
+    renderWaveformBars(targetReviewSoundwave, synthetic, 'target-bar');
+  }
+}
+
+/* ── 16-bit Mono 16kHz PCM WAV Encoder ── */
+function encodeWAV(samples, sampleRate = 16000) {
+  const buffer = new ArrayBuffer(44 + samples.length * 2);
+  const view = new DataView(buffer);
+
+  function writeString(offset, str) {
+    for (let i = 0; i < str.length; i++) {
+      view.setUint8(offset + i, str.charCodeAt(i));
+    }
+  }
+
+  // RIFF container
+  writeString(0, 'RIFF');
+  view.setUint32(4, 36 + samples.length * 2, true);
+  writeString(8, 'WAVE');
+
+  // fmt subchunk
+  writeString(12, 'fmt ');
+  view.setUint32(16, 16, true);             // PCM chunk size
+  view.setUint16(20, 1, true);              // AudioFormat 1 = PCM
+  view.setUint16(22, 1, true);              // Channels = 1 (mono)
+  view.setUint32(24, sampleRate, true);     // SampleRate
+  view.setUint32(28, sampleRate * 2, true); // ByteRate (sampleRate * channels * 16 / 8)
+  view.setUint16(32, 2, true);              // BlockAlign (channels * 16 / 8)
+  view.setUint16(34, 16, true);             // BitsPerSample
+
+  // data subchunk
+  writeString(36, 'data');
+  view.setUint32(40, samples.length * 2, true);
+
+  // PCM samples: clamp float32 [-1, 1] into int16
+  let offset = 44;
+  for (let i = 0; i < samples.length; i++, offset += 2) {
+    const s = Math.max(-1, Math.min(1, samples[i]));
+    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+  }
+
+  return buffer;
+}
+
+/* ============================================================
+   12. MICROPHONE CAPTURE & REAL-TIME ANIMATION
+   ============================================================ */
+let mediaRecorder   = null;
+let recordedChunks  = [];
+let recordStream    = null;
+let recordTimeout   = null;
+let liveAnalyser    = null;
+let liveAnimId      = null;
+
+async function startRecording() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    console.warn('getUserMedia not supported in this environment');
+    return;
+  }
+
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') await audioCtx.resume();
+
+  recordStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+  // Connect live AnalyserNode for terracotta practice waveform
+  const source = audioCtx.createMediaStreamSource(recordStream);
+  liveAnalyser = audioCtx.createAnalyser();
+  liveAnalyser.fftSize = 64;
+  source.connect(liveAnalyser);
+
+  // Prepare practice bars
+  renderWaveformBars(pronPracticeSoundwave, null, 'practice-bar');
+
+  recordedChunks = [];
+  let options = {};
+  if (typeof MediaRecorder !== 'undefined') {
+    if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+      options = { mimeType: 'audio/webm;codecs=opus' };
+    } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+      options = { mimeType: 'audio/webm' };
+    } else if (MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')) {
+      options = { mimeType: 'audio/ogg;codecs=opus' };
+    }
+  }
+
+  mediaRecorder = new MediaRecorder(recordStream, options);
+
+  mediaRecorder.ondataavailable = (e) => {
+    if (e.data && e.data.size > 0) {
+      recordedChunks.push(e.data);
+    }
+  };
+
+  mediaRecorder.onstop = async () => {
+    if (recordTimeout) {
+      clearTimeout(recordTimeout);
+      recordTimeout = null;
+    }
+    if (liveAnimId) {
+      cancelAnimationFrame(liveAnimId);
+      liveAnimId = null;
+    }
+    if (recordStream) {
+      recordStream.getTracks().forEach((track) => track.stop());
+      recordStream = null;
+    }
+    if (recordBtn) {
+      recordBtn.classList.remove('recording');
+    }
+
+    await finishRecordingProcessing();
+  };
+
+  mediaRecorder.start();
+  if (recordBtn) recordBtn.classList.add('recording');
+
+  // Real-time visualization loop
+  visualizeLivePractice();
+
+  // Automatic 3.5s maximum cutoff
+  recordTimeout = setTimeout(() => {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      mediaRecorder.stop();
+    }
+  }, 3500);
+}
+
+function stopRecording() {
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
+    mediaRecorder.stop();
+  }
+}
+
+function visualizeLivePractice() {
+  if (!liveAnalyser || !mediaRecorder || mediaRecorder.state !== 'recording') return;
+  const dataArray = new Uint8Array(liveAnalyser.frequencyBinCount);
+  liveAnalyser.getByteFrequencyData(dataArray);
+
+  const bars = pronPracticeSoundwave.querySelectorAll('.wave-bar');
+  if (bars.length > 0) {
+    const step = Math.max(1, Math.floor(dataArray.length / bars.length));
+    bars.forEach((bar, i) => {
+      const val = dataArray[i * step] || 0;
+      const heightPercent = Math.max(14, Math.round((val / 255) * 100));
+      bar.style.height = `${heightPercent}%`;
+    });
+  }
+
+  liveAnimId = requestAnimationFrame(visualizeLivePractice);
+}
+
+async function finishRecordingProcessing() {
+  if (recordedChunks.length === 0) return;
+
+  try {
+    const rawBlob = new Blob(recordedChunks, { type: (mediaRecorder && mediaRecorder.mimeType) || 'audio/webm' });
+    const arrayBuffer = await rawBlob.arrayBuffer();
+
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') await audioCtx.resume();
+
+    const decodedBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+
+    // Resample via OfflineAudioContext to 16kHz mono
+    const targetSampleRate = 16000;
+    const targetLength = Math.max(1, Math.ceil(decodedBuffer.duration * targetSampleRate));
+    const offlineCtx = new OfflineAudioContext(1, targetLength, targetSampleRate);
+
+    const source = offlineCtx.createBufferSource();
+    source.buffer = decodedBuffer;
+    source.connect(offlineCtx.destination);
+    source.start(0);
+
+    const resampledBuffer = await offlineCtx.startRendering();
+    const monoChannel = resampledBuffer.getChannelData(0);
+
+    // Encode to 16-bit PCM WAV Blob
+    const wavBuffer = encodeWAV(monoChannel, targetSampleRate);
+    const wavBlob = new Blob([wavBuffer], { type: 'audio/wav' });
+    const recordedAudioUrl = URL.createObjectURL(wavBlob);
+
+    // Extract static peaks
+    const peaks = extractPeaks(resampledBuffer, NUM_WAVE_BARS);
+
+    const currentWord = VOCAB[activeIndex];
+    userRecordings[currentWord.id] = {
+      audioUrl: recordedAudioUrl,
+      wavBlob: wavBlob,
+      peaks: peaks
+    };
+
+    // Render static waveform bars
+    renderWaveformBars(pronPracticeSoundwave, peaks, 'practice-bar');
+    renderWaveformBars(userReviewSoundwave, peaks, 'practice-bar');
+
+    // Immediate playback for instant auditory feedback
+    playAudio(recordedAudioUrl);
+    pulseWaveform(pronPracticeSoundwave);
+    pulseWaveform(userReviewSoundwave);
+  } catch (err) {
+    console.warn('Error processing recording audio buffer:', err);
+  }
+}
+
+/* ============================================================
+   13. STAGE SYNCHRONIZATION & INTERACTIVE WIRING
+   ============================================================ */
+function updateActiveWordPronunciation() {
+  if (!VOCAB || VOCAB.length === 0) return;
+  const currentWord = VOCAB[activeIndex];
+
+  // Load target audio waveform
+  loadTargetWaveform(currentWord.full_audio_url);
+
+  // Render practice & review user waveforms
+  const rec = userRecordings[currentWord.id];
+  if (rec && rec.peaks) {
+    renderWaveformBars(pronPracticeSoundwave, rec.peaks, 'practice-bar');
+    renderWaveformBars(userReviewSoundwave, rec.peaks, 'practice-bar');
+  } else {
+    renderWaveformBars(pronPracticeSoundwave, null, 'practice-bar');
+    renderWaveformBars(userReviewSoundwave, null, 'practice-bar');
+  }
+}
+
+function attachPronunciationAndReviewListeners() {
+  // Target native replay
+  function playTargetAudio(e) {
+    if (e) e.stopPropagation();
+    const currentWord = VOCAB[activeIndex];
+    playAudio(currentWord.full_audio_url);
+    pulseWaveform(pronTargetSoundwave);
+    pulseWaveform(targetReviewSoundwave);
+  }
+
+  if (pronTarget) {
+    pronTarget.addEventListener('click', playTargetAudio);
+  }
+  if (targetReviewIcon) {
+    targetReviewIcon.addEventListener('click', playTargetAudio);
+  }
+  if (targetReviewSoundwave) {
+    targetReviewSoundwave.addEventListener('click', playTargetAudio);
+  }
+
+  // Learner practice replay
+  function playUserRecordedAudio(e) {
+    if (e) e.stopPropagation();
+    const currentWord = VOCAB[activeIndex];
+    const rec = userRecordings[currentWord.id];
+    if (rec && rec.audioUrl) {
+      playAudio(rec.audioUrl);
+      pulseWaveform(pronPracticeSoundwave);
+      pulseWaveform(userReviewSoundwave);
+    } else {
+      // Replay target with gentle pulse if no recording yet
+      playTargetAudio();
+    }
+  }
+
+  if (pronPractice) {
+    pronPractice.addEventListener('click', playUserRecordedAudio);
+  }
+  if (userReviewIcon) {
+    userReviewIcon.addEventListener('click', playUserRecordedAudio);
+  }
+  if (userReviewSoundwave) {
+    userReviewSoundwave.addEventListener('click', playUserRecordedAudio);
+  }
+
+  // Microphone toggle button
+  if (recordBtn) {
+    recordBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        stopRecording();
+      } else {
+        startRecording().catch((err) => {
+          console.warn('Microphone start error:', err);
+        });
+      }
+    });
+  }
+}
+
+/* Floating Stage Navigator */
+function setupStageNav() {
+  stageNavDots.forEach((dot) => {
+    dot.addEventListener('click', () => {
+      const targetId = dot.dataset.target;
+      const targetEl = document.getElementById(targetId);
+      if (targetEl) {
+        targetEl.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  });
+
+  const sections = ['vocab-stage', 'pronunciation-test', 'test-review-wrapper']
+    .map((id) => document.getElementById(id))
+    .filter(Boolean);
+
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            stageNavDots.forEach((d) => {
+              d.classList.toggle('active', d.dataset.target === entry.target.id);
+            });
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+    sections.forEach((sec) => observer.observe(sec));
+  }
+}
+
+/* ============================================================
+   14. INITIALIZATION & DATA LOADING
    ============================================================ */
 function init() {
   // 1. Immediately render fallback data so screen is never blank or broken
   renderCarousel();
   renderBreakdown();
   setActiveCategory('phoneme');
+  updateActiveWordPronunciation();
+  attachPronunciationAndReviewListeners();
+  setupStageNav();
 
   // 2. Fetch lesson_data.json asynchronously
   fetch('./lesson_data.json')
@@ -391,6 +831,7 @@ function init() {
         VOCAB = data.items;
         renderCarousel();
         renderBreakdown();
+        updateActiveWordPronunciation();
       } else {
         console.warn('lesson_data.json had no items; keeping verified fallback bank.');
       }
