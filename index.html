@@ -17,8 +17,8 @@
         <button class="stage-nav-dot active" data-target="vocab-stage" aria-label="Vocabulary Stage"></button>
         <button class="stage-nav-dot" data-target="listening-test" aria-label="Listening Test"></button>
         <button class="stage-nav-dot" data-target="pronunciation-test" aria-label="Pronunciation Test"></button>
-        <button class="stage-nav-dot" data-target="diagnostic-stage" aria-label="Diagnostic Test"></button>
         <button class="stage-nav-dot" data-target="test-review-wrapper" aria-label="Review Stage"></button>
+        <button class="stage-nav-dot" data-target="diagnostic-stage" aria-label="Diagnostic Test"></button>
     </nav>
 
     <!-- =============================================
@@ -170,6 +170,12 @@
             <div class="listening-choice choice-2 symbol-frame" role="button" aria-label="Second sound choice" tabindex="0">
                 <svg viewBox="0 0 100 100" aria-hidden="true"><polygon points="50,5 61,36 94,36 67,55 77,88 50,68 23,88 33,55 6,36 39,36" fill="#2A85A8"/></svg>
             </div>
+
+            <button class="listening-confirm-btn" type="button" aria-label="Confirm selected sound" hidden>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="m5 12 4 4L19 6"/>
+                </svg>
+            </button>
         </div><!-- /#👂 listening test 👂 -->
 
         <!-- 🗣️ pronunciation test 🗣️ -->
@@ -269,9 +275,9 @@
                 </div>
             </div>
 
-            <button class="lesson-next-btn unlocked review-restart-btn" aria-label="Restart lesson">
+            <button class="lesson-next-btn review-next-btn" aria-label="Continue to diagnosis">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M20 11a8 8 0 0 0-14.9-3M4 4v4h4M4 13a8 8 0 0 0 14.9 3M20 20v-4h-4"/>
+                    <path d="M5 12h14M13 6l6 6-6 6"/>
                 </svg>
             </button>
         </div><!-- /#🔄 test review 🔄 -->
@@ -305,12 +311,12 @@
                 </div>
             </div>
 
-            <button class="lesson-next-btn diagnostic-next-btn" data-next-stage="test-review-wrapper" aria-label="Review results" aria-disabled="true" disabled>
+            <button class="lesson-next-btn diagnostic-restart-btn" aria-label="Restart lesson">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M5 12h14M13 6l6 6-6 6"/>
+                    <path d="M20 11a8 8 0 0 0-14.9-3M4 4v4h4M4 13a8 8 0 0 0 14.9 3M20 20v-4h-4"/>
                 </svg>
             </button>
-        </div><!-- /#🗣️🩺👂 pronunciation & speaking diagnostic 🗣️🩺👂 -->
+        </div><!-- /#🔄 test review 🔄 -->
 
     </div><!-- /#assessment-stage -->
 
