@@ -31,4 +31,4 @@ Each row should be 1 user answer, 1 result, and 1 question/target. The answer an
 #### Purpose & Goal
 - Purpose: This section gives users a visual representation of their current language ability in comparison to a native speaker in their target language (as represented by a triangle, mountain or another visual symbol). For now, it represents listening and pronunciation ability.
 - Goal: To give users a quick overview of their current progress in various aspects of their L2 language ability.
-- Example: A user can see at a glance a pronunciation bar that is 80% and a pronunciation bar that's at 40% so they can understand where they most likely should put their focus.
+- Example: A user can see at a glance a hearing bar that is 80% and a pronunciation bar that's at 40% so they can understand where they most likely should put their focus.
