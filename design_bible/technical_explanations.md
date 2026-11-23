@@ -1,34 +1,50 @@
 # Technical Explanations
 
+## Audio & AI Pipeline (`gll_intro_to_ai.ipynb` -> `lesson_data.json`)
+- **Phone Detection (`Allosaurus`):** Listens to native audio and breaks words down into individual speech sounds without showing any written text or IPA symbols on screen. Each sound is grouped into a simple shape category (`consonant` = terracotta circle `●`, `vowel` = moss-green triangle `▲`) and paired with a clear reference sound.
+- **Syllable Timing (`MMS_FA` / Energy Peaks):** Finds where each syllable starts and ends so the app can play single syllables and size the syllable bars (`width_px`) to match how long they sound.
+- **Tone & Humming (`TorchCREPE`):** Tracks voice pitch ($F_0$) and creates a humming-only audio track (`_hum.wav`) so users can hear the melody of a word without consonants or vowels getting in the way.
+
+---
+
 ## Assessments
 
-### Listening Assessment (#listening-test)
+### Listening Assessment (`#listening-test`)
 
 #### Purpose & Goal
-- Purpose: This section assesses a user's ability to accurately perceive a sound, word, or phrase auditorily. 
-- Goal: This section contains a single audio-only question (.listening-question) and 2 audio-only choices (.listening-choice .choice-1 .choice-2). For this current prototype, questions can be minimal pair questions. The output should be a score (backend only) that will be used in assessing how good the user's listening ability is in their target language using an AI model. Only sounds, words, or phrases from the current story or vocabulary section should be used as questions.
-- Example: Question is *ae* as in the sound that appears in *cat*. Choices can be *cat* or *cot*. The AI model will score accordingly depending on whether the user chose the answer that contained the question audio.
+- **Purpose:** Checks if a user can accurately hear the difference between sounds, words, phrases or tones without reading any text.
+- **Goal:** Shows one audio-only question (`.listening-question`) and two audio-only choices (`.listening-choice`, `.choice-1`, `.choice-2`). For this prototype, questions use minimal pairs or words from the current vocabulary/story section. On the backend, the AI records two hidden scores (never shown as numbers on screen):
+  - **Accuracy:** Whether the user picked the choice that matches the question audio.
+  - **Reaction Speed (`ms`):** How fast the user answered after hearing the prompt, which helps show if they are processing sounds naturally in real time.
+- **Example:** The question plays the *ae* sound from *cat*. The two choices play *cat* and *cot*. If the user picks *cat*, the backend marks it as accurate and tracks which sounds the user still struggles to hear.
 
-### Pronunciation Assessment (#pronunciation-test)
-
-#### Purpose & Goal
-- Purpose: This section assesses a user's ability to accurately reproduce a sound, word, or phrase verbally. 
-- Goal: This section should take the voice recording of the user as input and test it against the audio of the pronunciation target (#pronunciation-target). It should output a score (backend only) that will be used in assessing how good the user's pronunciation ability is in their target language using an AI model. Only sounds, words, or phrases from the current story or vocabulary section should be used as questions.
-- Example: Target sound is *cat* but user says *cot*. The AI model would score this accordingly.
-
-
-### Review Section (#test-review-wrapper)
+### Pronunciation Assessment (`#pronunciation-test`)
 
 #### Purpose & Goal
-- Purpose: After both listening and pronunciation sections are done, users will be taken to a screen to review their answers. It consists of 3 columns. Column 1 (#user-review-column) is a list of all the answers given by the user. Column 2 (#results-review-column) is a list of either a *check* (✔️) (or equivalent) or *x* (❌) (or equivalent) emoji or symbol to represent whether the answer was right or wrong. Column 3 (#target-review-column) is a list of all the questions/targets the user was being measured against. Future updates may change the result column into a range instead of a simple binary.
+- **Purpose:** Checks if a user can accurately say a sound, word, or phrase out loud.
+- **Goal:** Takes the user's voice recording (`.wav`) and compares it against the native target audio (`#pronunciation-target`) using an AI model (`Wav2Vec2-XLSR-53` / `TorchCREPE`). Only words or sounds from the current vocabulary or story section are used. The AI outputs hidden backend scores that:
+  - Measure how closely the user's speech and pitch match the target.
+  - **Pinpoint exact sound errors:** Find *which specific sound* inside the word was off (for example, the middle vowel) so the app can highlight that shape later without using text or IPA.
+- **Example:** The target sound is *cat*, but the user says *cot*. The AI detects that the first and last sounds match, while the middle vowel sound diverged.
 
-Each row should be 1 user answer, 1 result, and 1 question/target. The answer and the target on a given row should be related.
-- Goal: This section is to allow the user to listen to their recordings and get itemized feedback in order to see where they can improve.
-- Example: A user can see a row with their answer audio (#user-review-item) on the left and a the correct answer (#target-review-item) on the right. The middle contains a results badge (#results-badge) that indicates whether their answer matched the target.
+---
 
-### Diagnostic Section (#diagnostic-stage)
+### Review Section (`#test-review-wrapper`)
 
 #### Purpose & Goal
-- Purpose: This section gives users a visual representation of their current language ability in comparison to a native speaker in their target language (as represented by a triangle, mountain or another visual symbol). For now, it represents listening and pronunciation ability.
-- Goal: To give users a quick overview of their current progress in various aspects of their L2 language ability.
-- Example: A user can see at a glance a hearing bar that is 80% and a pronunciation bar that's at 40% so they can understand where they most likely should put their focus.
+- **Purpose:** After finishing the listening and pronunciation tests, users see a 3-column screen to compare their answers against the target sounds:
+  - **Column 1 (`#user-review-column`):** A list of all the user's recorded answers or chosen sounds (`#user-review-item`).
+  - **Column 2 (`#results-review-column`):** A visual status badge (`#results-badge`) for each row—such as a green check (`✔️`) when the sound matches, or a gentle colored ring pulse when a sound needs practice (avoiding harsh red `❌` marks to keep stress low, per `design_philosophy.md`). Future updates may replace this with a smooth match meter instead of a simple binary yes/no badge.
+  - **Column 3 (`#target-review-column`):** A list of all the native target sounds, words, or phrases (`#target-review-item`) the user was measured against.
+  - Each row lines up **1 user answer**, **1 result badge**, and **1 target sound**.
+- **Goal:** Lets the user tap and replay their own recording right next to the native target so they can hear where to improve.
+- **Example:** A row shows the user's recorded waveform (`#user-review-item`) on the left, the native target waveform (`#target-review-item`) on the right, and a results badge (`#results-badge`) in the middle showing whether they matched.
+
+---
+
+### Diagnostic Section (`#diagnostic-stage`)
+
+#### Purpose & Goal
+- **Purpose:** Gives users a simple visual picture of their current language ability compared to a native speaker (represented by the center mountain/triangle symbol). Right now, the left bar (`#hearing-progress-fill`) shows **listening ability** and the right bar (`#pronunciation-progress-fill`) shows **pronunciation ability**.
+- **Goal:** Helps users see at a glance whether they need more ear training (listening) or more speaking practice (pronunciation) without showing text or percentage numbers.
+- **Example:** If the left hearing bar is filled high (around 80%) and the right pronunciation bar is lower (around 40%), the user can immediately tell that their ears hear the sounds well, so they should focus on speaking practice.
