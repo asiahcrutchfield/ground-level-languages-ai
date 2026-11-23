@@ -49,3 +49,58 @@
 - **Purpose:** Gives users a simple visual picture of their current language ability compared to a native speaker (represented by the center mountain/triangle symbol). Right now, the left bar (`#hearing-progress-fill`) shows **listening ability** and the right bar (`#pronunciation-progress-fill`) shows **pronunciation ability**.
 - **Goal:** Helps users see at a glance whether they need more ear training (listening) or more speaking practice (pronunciation) without showing text or percentage numbers.
 - **Example:** If the left hearing bar is filled high (around 80%) and the right pronunciation bar is lower (around 40%), the user can immediately tell that their ears hear the sounds well, so they should focus on speaking practice.
+
+---
+
+## Current Implementation Notes: Runtime and Scoring
+
+The preceding sections describe the project's technical goals. This section records what currently runs in the browser so the design intent is not mistaken for an implemented backend feature.
+
+### Browser Runtime vs. Offline Preparation
+
+The frontend is plain HTML, CSS, and JavaScript. On startup, `script.js` renders embedded fallback vocabulary, then asynchronously fetches `lesson_data.json` and `assessment_data.json`. It plays local audio, captures microphone input, decodes audio with Web Audio, and calculates assessment values in JavaScript.
+
+There is **no live backend server, model API, learner account, or persistent score store** in the current app. Results, response times, recordings, and derived peaks stay in page memory. Recordings are not sent to a server.
+
+[`gll_intro_to_ai.ipynb`](../gll_intro_to_ai.ipynb) is a separate offline Colab pipeline that prepares static lesson assets; the website does not call its models at runtime, and they do not score learner recordings:
+
+- **Torchaudio MMS_FA** aligns native lesson-word audio to the canonical `WORD_PHONEME_LEXICON`. The notebook writes word-specific phoneme slices when alignment succeeds, with a proportional-duration fallback. Where a lexicon entry defines `ref_audio`, the generated lesson manifest points to that reference clip for playback instead of the in-word slice.
+- **Isolated phoneme clips:** The notebook labels its source as an Oxford phoneme collection and downloads audio from the GitHub-hosted `xiaozhah/phoneme_audio` repository, converting it to 16 kHz mono WAV under `audio/phonemes/`.
+- **Librosa and SciPy** trim and analyze word audio. RMS energy and SciPy `find_peaks` estimate syllable boundaries; these are signal-processing tools, not separate recognition models.
+- **TorchCREPE** estimates fundamental frequency (`F₀`) and voicing periodicity on lesson audio. The notebook uses these to synthesize humming tracks and classify simplified pitch movement. It does not analyze learner audio in the browser.
+- **SoundFile, NumPy, and PyTorch** support WAV I/O, numerical operations, and model execution in the notebook.
+
+### Listening Score and Response Time
+
+For each trial, the target option uses the lesson item's `full_audio_url`; the foil uses the distractor path from `assessment_data.json`. The choices are randomly placed left/right. A tap previews and selects an option; the separate check control submits it.
+
+```text
+listening_accuracy = correct_trials / number_of_submitted_trials
+```
+
+The guided round has 3 trials, so its completed score is `correct_trials / 3`. A choice is correct when its ID and side both match the target. JavaScript stores correctness and response latency in milliseconds in `hearingResults`. Latency runs from the current prompt start to submission; replaying the prompt resets its start time. Latency does not change the diagnostic bar height. If the assessment manifest has not loaded or a word has no assessment entry, the code can fall back to another lesson word as the foil.
+
+### Pronunciation Similarity
+
+The current frontend uses a waveform-envelope proxy. It does **not** run forced alignment, phoneme recognition, or pitch scoring on learner recordings.
+
+1. On recording stop, Web Audio decodes the microphone audio, resamples it to **16 kHz mono**, and JavaScript encodes a 16-bit PCM WAV Blob.
+2. It extracts **28 normalized waveform-envelope peaks** from the user recording and target audio. Each peak is the maximum absolute sample amplitude in one temporal chunk, normalized by the largest peak; values have a `0.14` minimum floor for display and comparison.
+3. It computes mean absolute difference and converts that to similarity:
+
+   ```text
+   difference = (1 / 28) × Σ |user_peak[i] − target_peak[i]|
+   similarity = max(0, 1 − difference)
+   ```
+
+4. Similarity **≥ 0.82** triggers the positive Review badge. The Diagnostic pronunciation bar displays the mean similarity across the two recorded attempts in the round.
+
+This compares coarse timing and amplitude envelopes. It cannot verify that the right phonemes were spoken, localize a substitution, or accurately evaluate pitch. A high value should not be interpreted as validated pronunciation accuracy.
+
+### Mock Attempts, Aggregation, and Persistence
+
+Pronunciation entries in `assessment_data.json` reference prerecorded samples in `audio/test_bank/mock_attempts/`. If no live recording exists for the active word, JavaScript can use the mock audio to populate the practice/review waveform and preview badge, and can play it from the practice replay control. Mock similarities are **not** appended to `pronunciationScores`, so they do not contribute to the completed recorded-pronunciation average.
+
+The Diagnostic hearing bar uses the fraction of correct entries in `hearingResults`; its pronunciation bar uses the arithmetic mean of `pronunciationScores`. Values are rendered as visual fills, without numeric text. Both arrays are in-memory only and reset when rounds are initialized or the lesson is restarted.
+
+Sub-word error localization and learner-specific pitch analysis remain future capabilities. They would require separately implemented and validated server-side processing; they are not provided by the current app.

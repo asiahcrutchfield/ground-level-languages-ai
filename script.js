@@ -196,6 +196,7 @@ const stageNavDots           = Array.from(document.querySelectorAll('.stage-nav-
 const listeningStage         = document.getElementById('listening-test');
 const listeningPrompt        = listeningStage && listeningStage.querySelector('.listening-question');
 const listeningChoices       = listeningStage ? Array.from(listeningStage.querySelectorAll('.listening-choice')) : [];
+const listeningConfirmBtn    = listeningStage?.querySelector('.listening-confirm-btn');
 const hearingFill            = document.getElementById('hearing-progress-fill');
 const pronFill               = document.getElementById('pronunciation-progress-fill');
 const hearingSideFill        = document.querySelector('.hearing-side-fill');
@@ -205,11 +206,11 @@ const pronIndicator          = document.querySelector('#pronunciation-progress-c
 const hearingResults         = [];
 const pronunciationScores    = [];
 const exploredWords           = new Set();
-const lessonStageIds          = ['vocab-stage', 'listening-test', 'pronunciation-test', 'diagnostic-stage', 'test-review-wrapper'];
+const lessonStageIds          = ['vocab-stage', 'listening-test', 'pronunciation-test', 'test-review-wrapper', 'diagnostic-stage'];
 const lessonStages            = lessonStageIds.map((id) => document.getElementById(id)).filter(Boolean);
 const vocabNextBtn             = document.querySelector('.vocab-next-btn');
-const diagnosticNextBtn        = document.querySelector('.diagnostic-next-btn');
-const reviewRestartBtn         = document.querySelector('.review-restart-btn');
+const reviewNextBtn            = document.querySelector('.review-next-btn');
+const diagnosticRestartBtn     = document.querySelector('.diagnostic-restart-btn');
 let currentStageIdx            = 0;
 let listeningTrialsCompleted  = 0;
 let pronunciationTrialsCompleted = 0;
@@ -223,6 +224,7 @@ let listeningOffer           = [];
 let listeningOfferWordId     = null;
 let listeningCorrectChoiceId = 'target';
 let listeningChoiceLocked    = true;
+let listeningSelectedSide    = null;
 
 function findLessonItem(itemId) {
   return VOCAB.find((item) => item.id === itemId) || null;
@@ -842,10 +844,27 @@ function setupListeningTest() {
     if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); replayPrompt(); }
   });
   listeningChoices.forEach((choice, side) => {
-    choice.addEventListener('click', () => completeListeningTrial(choice, side));
+    const previewChoice = () => {
+      if (listeningChoiceLocked) return;
+      const offeredSound = listeningOffer[side];
+      if (!offeredSound?.audioUrl) return;
+      listeningSelectedSide = side;
+      listeningChoices.forEach((candidate) => {
+        candidate.classList.remove('selected');
+        candidate.setAttribute('aria-pressed', candidate === choice ? 'true' : 'false');
+      });
+      choice.classList.add('selected', 'previewed');
+      listeningConfirmBtn.hidden = false;
+      playAudio(offeredSound.audioUrl);
+    };
+    choice.addEventListener('click', previewChoice);
     choice.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); completeListeningTrial(choice, side); }
+      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); previewChoice(); }
     });
+  });
+  listeningConfirmBtn?.addEventListener('click', () => {
+    if (listeningSelectedSide === null) return;
+    completeListeningTrial(listeningChoices[listeningSelectedSide], listeningSelectedSide);
   });
 }
 
@@ -867,6 +886,8 @@ function goToStage(stageId) {
   if (nextIndex < 0) return;
   currentStageIdx = nextIndex;
   lessonStages.forEach((stage) => stage.classList.toggle('flow-active', stage.id === stageId));
+  if (stageId === 'test-review-wrapper') reviewNextBtn?.classList.add('unlocked');
+  if (stageId === 'diagnostic-stage') diagnosticRestartBtn?.classList.add('unlocked');
   updateStageDots();
 
   if (stageId === 'listening-test') startListeningRound();
@@ -894,7 +915,9 @@ function startListeningRound() {
   hearingPromptStartedAt = 0;
   listeningChoiceLocked = true;
   listeningStage?.classList.remove('round-complete');
-  listeningChoices.forEach((choice) => choice.classList.remove('correct', 'incorrect', 'selected'));
+  listeningChoices.forEach((choice) => choice.classList.remove('correct', 'incorrect', 'selected', 'previewed'));
+  listeningChoices.forEach((choice) => choice.setAttribute('aria-pressed', 'false'));
+  if (listeningConfirmBtn) listeningConfirmBtn.hidden = true;
   setProgress(hearingFill, hearingIndicator, 0);
   if (hearingSideFill) hearingSideFill.style.height = '0%';
   startListeningTrial();
@@ -914,6 +937,10 @@ function startListeningTrial() {
   listeningCorrectChoiceId = assessment?.correct_choice_id || 'target';
   hearingPromptSide = listeningOffer.findIndex((choice) => choice.isTarget);
   listeningChoiceLocked = false;
+  listeningSelectedSide = null;
+  listeningChoices.forEach((choice) => choice.classList.remove('correct', 'incorrect', 'selected', 'previewed'));
+  listeningChoices.forEach((choice) => choice.setAttribute('aria-pressed', 'false'));
+  if (listeningConfirmBtn) listeningConfirmBtn.hidden = true;
   hearingPromptStartedAt = performance.now();
   playAudio(getTargetAudio(word));
   listeningPrompt?.classList.add('playing');
@@ -921,10 +948,11 @@ function startListeningTrial() {
 }
 
 function completeListeningTrial(choice, side) {
-  if (listeningChoiceLocked || !hearingPromptStartedAt) return;
+  if (listeningChoiceLocked || !hearingPromptStartedAt || listeningSelectedSide !== side) return;
   const selected = listeningOffer[side];
   if (!selected) return;
   listeningChoiceLocked = true;
+  if (listeningConfirmBtn) listeningConfirmBtn.hidden = true;
   playAudio(selected.audioUrl);
   const correct = selected.id === listeningCorrectChoiceId && side === hearingPromptSide;
   choice.classList.remove('correct', 'incorrect', 'selected');
@@ -975,7 +1003,7 @@ function handlePronunciationRecorded() {
   if (lessonStageIds[currentStageIdx] !== 'pronunciation-test') return;
   pronunciationTrialsCompleted += 1;
   if (pronunciationTrialsCompleted >= 2) {
-    window.setTimeout(() => goToStage('diagnostic-stage'), 850);
+    window.setTimeout(() => goToStage('test-review-wrapper'), 850);
     return;
   }
   window.setTimeout(() => {
@@ -995,11 +1023,6 @@ function startDiagnosticOverview() {
   setProgress(pronFill, pronIndicator, pronunciationMatch);
   if (hearingSideFill) hearingSideFill.style.height = `${hearingAccuracy * 100}%`;
   if (pronSideFill) pronSideFill.style.height = `${pronunciationMatch * 100}%`;
-  diagnosticNextBtn?.classList.add('unlocked');
-  if (diagnosticNextBtn) {
-    diagnosticNextBtn.disabled = false;
-    diagnosticNextBtn.setAttribute('aria-disabled', 'false');
-  }
 }
 
 function restartLessonFlow() {
@@ -1021,11 +1044,8 @@ function restartLessonFlow() {
     vocabNextBtn.disabled = true;
     vocabNextBtn.setAttribute('aria-disabled', 'true');
   }
-  diagnosticNextBtn?.classList.remove('unlocked');
-  if (diagnosticNextBtn) {
-    diagnosticNextBtn.disabled = true;
-    diagnosticNextBtn.setAttribute('aria-disabled', 'true');
-  }
+  reviewNextBtn?.classList.remove('unlocked');
+  diagnosticRestartBtn?.classList.remove('unlocked');
   renderCarousel();
   renderBreakdown();
   setActiveCategory('phoneme');
@@ -1118,8 +1138,8 @@ function setupStageNav() {
     });
   });
   vocabNextBtn?.addEventListener('click', () => goToStage('listening-test'));
-  diagnosticNextBtn?.addEventListener('click', () => goToStage('test-review-wrapper'));
-  reviewRestartBtn?.addEventListener('click', restartLessonFlow);
+  reviewNextBtn?.addEventListener('click', () => goToStage('diagnostic-stage'));
+  diagnosticRestartBtn?.addEventListener('click', restartLessonFlow);
   document.body.classList.add('guided-flow');
   lessonStages.forEach((stage) => stage.classList.toggle('flow-active', stage.id === 'vocab-stage'));
   currentStageIdx = 0;

@@ -1064,6 +1064,28 @@ button {
 #listening-test .listening-choice.selected { box-shadow: 0 0 0 7px rgba(42,133,168,.36), var(--shadow-active); }
 #listening-test .listening-choice.correct { box-shadow: 0 0 0 8px rgba(82,183,136,.52), var(--shadow-active); }
 #listening-test .listening-choice.incorrect { box-shadow: 0 0 0 8px rgba(42,133,168,.42), var(--shadow-active); }
+#listening-test .listening-confirm-btn {
+  position: absolute;
+  left: 50%;
+  bottom: 9vh;
+  transform: translateX(-50%);
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  color: var(--alabaster);
+  background: var(--primary);
+  box-shadow: var(--shadow-active);
+  cursor: pointer;
+  animation: gentleReadyPulse 2.2s ease-in-out infinite;
+}
+#listening-test .listening-confirm-btn[hidden] { display: none !important; }
+#listening-test .listening-confirm-btn svg { width: 28px; height: 28px; }
+#listening-test .listening-confirm-btn:hover { transform: translateX(-50%) scale(1.08); }
+#listening-test .listening-confirm-btn:focus-visible,
+#listening-test .listening-choice:focus-visible { outline: 3px solid var(--alabaster); outline-offset: 5px; }
 
 #pronunciation-test { align-items: center; justify-content: center; padding: 48px 24px; overflow: hidden; }
 .pronunciation-stage-inner { position: relative; width: min(820px, 100%); height: min(680px, 88vh); }
@@ -1215,20 +1237,22 @@ body.guided-flow #test-review-wrapper.flow-active {
 }
 .lesson-next-btn svg { width: 26px; height: 26px; }
 .vocab-next-btn { position: absolute; right: 84px; bottom: 24px; }
-.diagnostic-next-btn {
+.review-next-btn {
   position: absolute;
   bottom: 36px;
   left: 50%;
   transform: translateX(-50%);
 }
-.diagnostic-next-btn.unlocked:hover { transform: translateX(-50%) scale(1.12); }
-.review-restart-btn {
+.review-next-btn.unlocked:hover { transform: translateX(-50%) scale(1.12); }
+.diagnostic-restart-btn {
   position: absolute;
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
+  opacity: 1;
+  pointer-events: auto;
 }
-.review-restart-btn:hover { transform: translateX(-50%) scale(1.12); }
+.diagnostic-restart-btn:hover { transform: translateX(-50%) scale(1.12); }
 .stage-nav-dot.completed { background: var(--primary); border-color: var(--alabaster); }
 .stage-nav-dot:not(.active):not(.completed) { background: rgba(255,255,255,.22); border-color: rgba(239,236,226,.58); }
 
@@ -1248,8 +1272,8 @@ body.guided-flow #test-review-wrapper.flow-active {
 
 @media (max-width: 600px) {
   .vocab-next-btn { right: 72px; bottom: 18px; }
-  .diagnostic-next-btn { bottom: 20px; }
-  .review-restart-btn { bottom: 12px; }
+  .review-next-btn { bottom: 20px; }
+  .diagnostic-restart-btn { bottom: 12px; }
 }
 @media (prefers-reduced-motion: reduce) {
   body.guided-flow .lesson-stage,
