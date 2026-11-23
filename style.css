@@ -545,25 +545,65 @@ button {
   display: none; /* Reserved for separate diagnostic milestone */
 }
 
-/* 🗣️ Pronunciation Test Canvas */
-#pronunciation-test {
-  position: relative;
+#listening-test,
+.pron-speaking-diagnostic-wrapper {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  align-items: center;
+  justify-content: center;
+  gap: 48px;
   width: 100vw;
   min-height: 100vh;
-  height: 100vh;
-  scroll-snap-align: start;
   padding: 48px 64px 60px 64px;
   background: var(--bg);
   box-sizing: border-box;
+}
 
-  /* Botanical atmospheric gradient */
-  background-image:
-    radial-gradient(ellipse at 85% 15%, rgba(255,255,255,0.08) 0%, transparent 50%),
-    radial-gradient(ellipse at 15% 85%, rgba(45,106,79,0.40) 0%, transparent 55%),
-    radial-gradient(ellipse at 50% 50%, rgba(82,183,136,0.12) 0%, transparent 60%);
+/* Listening symbols reuse .symbol-frame */
+#listening-test .symbol-frame {
+  width: 80px;
+  height: 80px;
+}
+
+/* Space between the two choices and the question */
+#listening-test .listening-choice,
+#listening-test .listening-question {
+  margin: 8px 0;
+}
+
+/* Diagnostic wrapper extra spacing */
+.pron-speaking-diagnostic-wrapper {
+  gap: 48px;
+}
+
+/* Diagnostic standard placeholder – larger for visual emphasis */
+.diagnostic-standard {
+  width: 240px;
+  height: 240px;
+  background: var(--card-bg);
+  border: 3px solid var(--stone-border);
+  border-radius: var(--radius-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Diagnostic standard visual placeholder */
+.diagnostic-standard {
+  width: 200px;
+  height: 200px;
+  background: var(--card-bg);
+  border: 3px solid var(--stone-border);
+  border-radius: var(--radius-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Ensure progress containers inside diagnostic align centrally */
+.pron-speaking-diagnostic-wrapper .diagnostic-progress-container {
+  width: 80%;
+  max-width: 400px;
 }
 
 /* Top-Right Target Row */
