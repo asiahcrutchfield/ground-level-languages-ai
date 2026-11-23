@@ -1012,6 +1012,16 @@ button {
   }
 }
 
+/* Quiet botanical signal for a mock or recorded attempt that diverges. */
+.results-badge.needs-review {
+  animation: softReviewPulse 2.6s ease-in-out infinite;
+}
+
+@keyframes softReviewPulse {
+  0%, 100% { box-shadow: 0 4px 14px rgba(0, 0, 0, .14); }
+  50% { box-shadow: 0 0 0 8px rgba(224, 159, 62, .28), 0 4px 14px rgba(0, 0, 0, .12); }
+}
+
 /* Assessment stages share the vocabulary stage's botanical canvas and snap rhythm. */
 #assessment-stage { background: var(--bg); }
 #listening-test, #pronunciation-test, #diagnostic-stage {

@@ -103,6 +103,7 @@ const FALLBACK_ITEMS = [
    2. STATE
    ============================================================ */
 let VOCAB          = FALLBACK_ITEMS;
+let ASSESSMENT_DATA = null;
 let activeIndex    = 0;
 let activeCategory = 'phoneme'; // 'phoneme' | 'syllable' | 'tone'
 let currentAudio   = null;
@@ -204,6 +205,25 @@ const pronIndicator          = document.querySelector('#pronunciation-progress-c
 const hearingResults         = [];
 let hearingPromptStartedAt   = 0;
 let hearingPromptSide        = 0;
+let listeningOffer           = [];
+let listeningOfferWordId     = null;
+let listeningCorrectChoiceId = 'target';
+
+function findLessonItem(itemId) {
+  return VOCAB.find((item) => item.id === itemId) || null;
+}
+
+function getListeningAssessment(itemId) {
+  return ASSESSMENT_DATA?.listening_assessment?.items?.find((item) => item.target_lesson_item_id === itemId) || null;
+}
+
+function getPronunciationAssessment(itemId) {
+  return ASSESSMENT_DATA?.pronunciation_assessment?.items?.find((item) => item.target_lesson_item_id === itemId) || null;
+}
+
+function getTargetAudio(item) {
+  return item?.full_audio_url || '';
+}
 
 /* ============================================================
    6. CAROUSEL RENDERING
@@ -368,7 +388,6 @@ playBtn.addEventListener('click', (e) => {
   e.stopPropagation();
   playBtn.classList.add('playing');
   playAudio(VOCAB[activeIndex].full_audio_url);
-  pulseWaveform(pronTargetSoundwave);
   setTimeout(() => playBtn.classList.remove('playing'), 900);
 });
 
@@ -503,6 +522,40 @@ async function loadTargetWaveform(audioUrl) {
     renderWaveformBars(pronTargetSoundwave, synthetic, 'target-bar');
     renderWaveformBars(targetReviewSoundwave, synthetic, 'target-bar');
   }
+}
+
+async function loadWaveformPeaks(audioUrl) {
+  if (!audioUrl) return null;
+  if (targetWaveforms[audioUrl]) return targetWaveforms[audioUrl];
+  try {
+    const response = await fetch(audioUrl);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const decoded = await audioCtx.decodeAudioData(await response.arrayBuffer());
+    const peaks = extractPeaks(decoded, NUM_WAVE_BARS);
+    targetWaveforms[audioUrl] = peaks;
+    return peaks;
+  } catch (err) {
+    console.warn(`Assessment waveform unavailable for "${audioUrl}":`, err.message || err);
+    return null;
+  }
+}
+
+function compareWaveformPeaks(attempt, target) {
+  if (!attempt || !target || attempt.length !== target.length) return null;
+  const difference = attempt.reduce((total, peak, index) => total + Math.abs(peak - target[index]), 0) / attempt.length;
+  return Math.max(0, 1 - difference);
+}
+
+function updateReviewBadge(matches) {
+  if (!resultsBadge) return;
+  resultsBadge.classList.toggle('needs-review', !matches);
+  const svg = resultsBadge.querySelector('.results-match-svg');
+  if (!svg) return;
+  svg.innerHTML = matches
+    ? '<circle cx="30" cy="30" r="24" fill="#52B788"/><polyline points="19,31 27,39 42,22" fill="none" stroke="#F7F4EB" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>'
+    : '<circle cx="30" cy="30" r="24" fill="#E09F3E"/><circle cx="21" cy="30" r="3" fill="#F7F4EB"/><circle cx="30" cy="30" r="3" fill="#F7F4EB"/><circle cx="39" cy="30" r="3" fill="#F7F4EB"/>';
+  resultsBadge.setAttribute('aria-label', matches ? 'Sounds align' : 'Sounds differ');
 }
 
 /* ── 16-bit Mono 16kHz PCM WAV Encoder ── */
@@ -693,13 +746,13 @@ async function finishRecordingProcessing() {
       peaks: peaks
     };
 
-    const targetPeaks = targetWaveforms[currentWord.full_audio_url];
-    if (targetPeaks && targetPeaks.length === peaks.length) {
-      const meanDifference = peaks.reduce((sum, peak, index) => sum + Math.abs(peak - targetPeaks[index]), 0) / peaks.length;
+    const targetPeaks = await loadWaveformPeaks(currentWord.full_audio_url);
+    const match = compareWaveformPeaks(peaks, targetPeaks);
+    if (match !== null) {
       // This is an acoustic-envelope similarity proxy, not phoneme recognition.
-      const match = Math.max(0, 1 - meanDifference);
       setProgress(pronFill, pronIndicator, match);
       if (pronSideFill) pronSideFill.style.height = `${match * 100}%`;
+      updateReviewBadge(match >= 0.82);
     }
 
     // Render static waveform bars
@@ -709,7 +762,6 @@ async function finishRecordingProcessing() {
     // Immediate playback for instant auditory feedback
     playAudio(recordedAudioUrl);
     pulseWaveform(pronPracticeSoundwave);
-    pulseWaveform(userReviewSoundwave);
   } catch (err) {
     console.warn('Error processing recording audio buffer:', err);
   }
@@ -721,32 +773,58 @@ async function finishRecordingProcessing() {
 function updateActiveWordPronunciation() {
   if (!VOCAB || VOCAB.length === 0) return;
   const currentWord = VOCAB[activeIndex];
+  const mockAttemptUrl = getPronunciationAssessment(currentWord.id)?.mock_attempt_audio_url;
+  const recording = userRecordings[currentWord.id];
 
-  // Load target audio waveform
-  loadTargetWaveform(currentWord.full_audio_url);
+  (async () => {
+    const targetPeaks = await loadWaveformPeaks(currentWord.full_audio_url);
+    if (VOCAB[activeIndex]?.id !== currentWord.id) return;
+    if (targetPeaks) {
+      renderWaveformBars(pronTargetSoundwave, targetPeaks, 'target-bar');
+      renderWaveformBars(targetReviewSoundwave, targetPeaks, 'target-bar');
+    }
 
-  // Render practice & review user waveforms
-  const rec = userRecordings[currentWord.id];
-  if (rec && rec.peaks) {
-    renderWaveformBars(pronPracticeSoundwave, rec.peaks, 'practice-bar');
-    renderWaveformBars(userReviewSoundwave, rec.peaks, 'practice-bar');
-  } else {
-    renderWaveformBars(pronPracticeSoundwave, null, 'practice-bar');
-    renderWaveformBars(userReviewSoundwave, null, 'practice-bar');
-  }
+    let attemptPeaks = recording?.peaks || null;
+    if (!attemptPeaks && mockAttemptUrl) {
+      attemptPeaks = await loadWaveformPeaks(mockAttemptUrl);
+      if (VOCAB[activeIndex]?.id !== currentWord.id) return;
+    }
+    renderWaveformBars(pronPracticeSoundwave, attemptPeaks, 'practice-bar');
+    renderWaveformBars(userReviewSoundwave, attemptPeaks, 'practice-bar');
+
+    const similarity = compareWaveformPeaks(attemptPeaks, targetPeaks);
+    if (similarity !== null) {
+      setProgress(pronFill, pronIndicator, similarity);
+      if (pronSideFill) pronSideFill.style.height = `${similarity * 100}%`;
+      updateReviewBadge(similarity >= 0.82);
+    } else {
+      updateReviewBadge(false);
+    }
+  })();
 }
 
 /* Low pressure binary listening contrast. Side 0 is the current word; side 1
    is the next concrete word. Latency and accuracy stay in the diagnostic UI. */
 function setupListeningTest() {
   if (!listeningStage || !listeningPrompt || listeningChoices.length !== 2) return;
+  const buildOffer = () => {
+    const currentWord = VOCAB[activeIndex];
+    const assessment = currentWord && getListeningAssessment(currentWord.id);
+    const target = { id: 'target', isTarget: true, audioUrl: getTargetAudio(currentWord) };
+    const distractorSpec = assessment?.choices?.find((choice) => choice.kind === 'distractor');
+    const foil = distractorSpec
+      ? { id: distractorSpec.id, isTarget: false, audioUrl: distractorSpec.audio_url }
+      : { id: 'foil', isTarget: false, audioUrl: getTargetAudio(VOCAB[(activeIndex + 1) % VOCAB.length]) };
+    listeningOffer = Math.random() < 0.5 ? [target, foil] : [foil, target];
+    listeningOfferWordId = currentWord?.id || null;
+    listeningCorrectChoiceId = assessment?.correct_choice_id || 'target';
+  };
   const promptAudio = () => {
-    const item = VOCAB[activeIndex];
-    if (!item) return;
-    hearingPromptSide = Math.random() < 0.5 ? 0 : 1;
-    const promptItem = VOCAB[(activeIndex + hearingPromptSide) % VOCAB.length];
+    if (!VOCAB[activeIndex]) return;
+    buildOffer();
+    hearingPromptSide = listeningOffer.findIndex((option) => option.isTarget);
     hearingPromptStartedAt = performance.now();
-    playAudio(promptItem.full_audio_url);
+    playAudio(getTargetAudio(VOCAB[activeIndex]));
     listeningPrompt.classList.add('playing');
     pulseWaveform(listeningPrompt);
   };
@@ -756,10 +834,12 @@ function setupListeningTest() {
   });
   listeningChoices.forEach((choice, side) => {
     const choose = () => {
-      const item = VOCAB[(activeIndex + side) % VOCAB.length];
-      playAudio(item.full_audio_url);
+      if (!listeningOffer.length || listeningOfferWordId !== VOCAB[activeIndex]?.id) buildOffer();
+      const selectedChoice = listeningOffer[side];
+      if (!selectedChoice) return;
+      playAudio(selectedChoice.audioUrl);
       choice.classList.remove('correct', 'incorrect', 'selected');
-      const isCorrect = side === hearingPromptSide;
+      const isCorrect = selectedChoice.id === listeningCorrectChoiceId && side === hearingPromptSide;
       choice.classList.add(isCorrect ? 'correct' : 'incorrect', 'selected');
       const latency = hearingPromptStartedAt ? performance.now() - hearingPromptStartedAt : 0;
       if (hearingPromptStartedAt) hearingResults.push({ correct: isCorrect, latency });
@@ -787,44 +867,56 @@ function attachPronunciationAndReviewListeners() {
   function playTargetAudio(e) {
     if (e) e.stopPropagation();
     const currentWord = VOCAB[activeIndex];
-    playAudio(currentWord.full_audio_url);
-    pulseWaveform(pronTargetSoundwave);
-    pulseWaveform(targetReviewSoundwave);
+    playAudio(getTargetAudio(currentWord));
   }
 
   if (pronTarget) {
-    pronTarget.addEventListener('click', playTargetAudio);
+    pronTarget.addEventListener('click', (event) => {
+      playTargetAudio(event);
+      pulseWaveform(pronTargetSoundwave);
+    });
   }
   if (targetReviewIcon) {
-    targetReviewIcon.addEventListener('click', playTargetAudio);
+    targetReviewIcon.addEventListener('click', (event) => {
+      playTargetAudio(event);
+      pulseWaveform(targetReviewSoundwave);
+    });
   }
   if (targetReviewSoundwave) {
-    targetReviewSoundwave.addEventListener('click', playTargetAudio);
+    targetReviewSoundwave.addEventListener('click', (event) => {
+      playTargetAudio(event);
+      pulseWaveform(targetReviewSoundwave);
+    });
   }
 
   // Learner practice replay
-  function playUserRecordedAudio(e) {
+  function playUserRecordedAudio(e, section) {
     if (e) e.stopPropagation();
     const currentWord = VOCAB[activeIndex];
     const rec = userRecordings[currentWord.id];
     if (rec && rec.audioUrl) {
       playAudio(rec.audioUrl);
-      pulseWaveform(pronPracticeSoundwave);
-      pulseWaveform(userReviewSoundwave);
+      pulseWaveform(section === 'review' ? userReviewSoundwave : pronPracticeSoundwave);
     } else {
-      // Replay target with gentle pulse if no recording yet
-      playTargetAudio();
+      const mockAttempt = getPronunciationAssessment(currentWord.id)?.mock_attempt_audio_url;
+      if (mockAttempt) {
+        playAudio(mockAttempt);
+        pulseWaveform(section === 'review' ? userReviewSoundwave : pronPracticeSoundwave);
+      } else {
+        playTargetAudio();
+        pulseWaveform(section === 'review' ? targetReviewSoundwave : pronTargetSoundwave);
+      }
     }
   }
 
   if (pronPractice) {
-    pronPractice.addEventListener('click', playUserRecordedAudio);
+    pronPractice.addEventListener('click', (event) => playUserRecordedAudio(event, 'pronunciation'));
   }
   if (userReviewIcon) {
-    userReviewIcon.addEventListener('click', playUserRecordedAudio);
+    userReviewIcon.addEventListener('click', (event) => playUserRecordedAudio(event, 'review'));
   }
   if (userReviewSoundwave) {
-    userReviewSoundwave.addEventListener('click', playUserRecordedAudio);
+    userReviewSoundwave.addEventListener('click', (event) => playUserRecordedAudio(event, 'review'));
   }
 
   // Microphone toggle button
@@ -887,6 +979,17 @@ function init() {
   attachPronunciationAndReviewListeners();
   setupListeningTest();
   setupStageNav();
+
+  fetch('./assessment_data.json')
+    .then((res) => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    })
+    .then((data) => {
+      ASSESSMENT_DATA = data;
+      updateActiveWordPronunciation();
+    })
+    .catch((err) => console.warn('assessment_data.json unavailable; using lesson audio fallback:', err));
 
   // 2. Fetch lesson_data.json asynchronously
   fetch('./lesson_data.json')
