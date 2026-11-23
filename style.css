@@ -1066,16 +1066,16 @@ button {
 #listening-test .listening-choice.incorrect { box-shadow: 0 0 0 8px rgba(42,133,168,.42), var(--shadow-active); }
 
 #pronunciation-test { align-items: center; justify-content: center; padding: 48px 24px; overflow: hidden; }
-.pronunciation-stage-inner { position: relative; width: min(820px, 100%); height: min(620px, 82vh); }
-#pronunciation-target-wrapper { position: absolute; top: 10%; right: 4%; width: auto; }
-#pronunciation-practice-wrapper { position: absolute; bottom: 12%; left: 4%; width: auto; margin: 0; }
+.pronunciation-stage-inner { position: relative; width: min(820px, 100%); height: min(680px, 88vh); }
+#pronunciation-target-wrapper { position: absolute; top: 6%; right: 4%; width: auto; }
+#pronunciation-practice-wrapper { position: absolute; bottom: 112px; left: 4%; width: auto; margin: 0; }
 #pronunciation-target, #pronunciation-practice { padding: 10px 14px; gap: 18px; border: 2px solid var(--border); background: var(--card-bg); border-radius: 24px; box-shadow: var(--shadow-active); }
 .pronunciation-soundwave { min-width: 180px; height: 58px; background: var(--card-bg); border: 2px solid var(--border); }
 .pronunciation-symbol-frame { width: 84px; height: 84px; border: 3px solid var(--primary); background: var(--card-bg); }
 #pronunciation-practice-symbol-frame { border-color: var(--terracotta); }
 .symbol-frame .symbol-img { width: 78%; height: 78%; object-fit: contain; display: block; pointer-events: none; }
 span.progress-dot { display: block; }
-#pronunciation-btn-wrapper { position: absolute; left: 50%; bottom: 1%; transform: translateX(-50%); margin: 0; height: 54px; }
+#pronunciation-btn-wrapper { position: absolute; left: 50%; bottom: 24px; transform: translateX(-50%); margin: 0; height: 54px; }
 .record-btn { width: 48px; height: 48px; }
 
 #diagnostic-stage { display: flex; flex-direction: row; align-items: flex-end; justify-content: center; gap: 64px; width: 100vw; height: 100vh; min-height: 100vh; padding: 0 24px 18vh; overflow: hidden; box-sizing: border-box; scroll-snap-align: start; }
@@ -1104,13 +1104,13 @@ span.progress-dot { display: block; }
   #listening-test .listening-choice svg { width: 54px; height: 54px; }
   #listening-test .listening-question { width: 76px; height: 76px; }
   #pronunciation-test { padding: 20px; }
-  .pronunciation-stage-inner { height: 70vh; }
-  #pronunciation-target-wrapper { top: 8%; right: 0; }
-  #pronunciation-practice-wrapper { left: 0; bottom: 15%; }
+  .pronunciation-stage-inner { height: 76vh; }
+  #pronunciation-target-wrapper { top: 6%; right: 0; }
+  #pronunciation-practice-wrapper { left: 0; bottom: 96px; }
   #pronunciation-target, #pronunciation-practice { gap: 8px; padding: 7px; }
   .pronunciation-soundwave { min-width: 100px; width: 34vw; }
   .pronunciation-symbol-frame { width: 64px; height: 64px; }
-  #pronunciation-btn-wrapper { width: 240px; bottom: 0; }
+  #pronunciation-btn-wrapper { width: 240px; bottom: 16px; }
   #diagnostic-stage { gap: clamp(18px, 7vw, 40px); padding-bottom: 12vh; }
   .standard-wrapper, .diagnostic-standard { width: 180px; height: 170px; }
   .diagnostic-progress-container, .diagnostic-progress-bar { width: 24px !important; flex-basis: 24px; }
