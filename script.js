@@ -192,6 +192,18 @@ const resultsBadge           = document.getElementById('results-badge');
 
 /* Floating Stage Nav */
 const stageNavDots           = Array.from(document.querySelectorAll('.stage-nav-dot'));
+const listeningStage         = document.getElementById('listening-test');
+const listeningPrompt        = listeningStage && listeningStage.querySelector('.listening-question');
+const listeningChoices       = listeningStage ? Array.from(listeningStage.querySelectorAll('.listening-choice')) : [];
+const hearingFill            = document.getElementById('hearing-progress-fill');
+const pronFill               = document.getElementById('pronunciation-progress-fill');
+const hearingSideFill        = document.querySelector('.hearing-side-fill');
+const pronSideFill            = document.querySelector('.pronunciation-side-fill');
+const hearingIndicator       = document.querySelector('#hearing-progress-container .progress-indicator');
+const pronIndicator          = document.querySelector('#pronunciation-progress-container .progress-indicator');
+const hearingResults         = [];
+let hearingPromptStartedAt   = 0;
+let hearingPromptSide        = 0;
 
 /* ============================================================
    6. CAROUSEL RENDERING
@@ -681,6 +693,15 @@ async function finishRecordingProcessing() {
       peaks: peaks
     };
 
+    const targetPeaks = targetWaveforms[currentWord.full_audio_url];
+    if (targetPeaks && targetPeaks.length === peaks.length) {
+      const meanDifference = peaks.reduce((sum, peak, index) => sum + Math.abs(peak - targetPeaks[index]), 0) / peaks.length;
+      // This is an acoustic-envelope similarity proxy, not phoneme recognition.
+      const match = Math.max(0, 1 - meanDifference);
+      setProgress(pronFill, pronIndicator, match);
+      if (pronSideFill) pronSideFill.style.height = `${match * 100}%`;
+    }
+
     // Render static waveform bars
     renderWaveformBars(pronPracticeSoundwave, peaks, 'practice-bar');
     renderWaveformBars(userReviewSoundwave, peaks, 'practice-bar');
@@ -713,6 +734,52 @@ function updateActiveWordPronunciation() {
     renderWaveformBars(pronPracticeSoundwave, null, 'practice-bar');
     renderWaveformBars(userReviewSoundwave, null, 'practice-bar');
   }
+}
+
+/* Low pressure binary listening contrast. Side 0 is the current word; side 1
+   is the next concrete word. Latency and accuracy stay in the diagnostic UI. */
+function setupListeningTest() {
+  if (!listeningStage || !listeningPrompt || listeningChoices.length !== 2) return;
+  const promptAudio = () => {
+    const item = VOCAB[activeIndex];
+    if (!item) return;
+    hearingPromptSide = Math.random() < 0.5 ? 0 : 1;
+    const promptItem = VOCAB[(activeIndex + hearingPromptSide) % VOCAB.length];
+    hearingPromptStartedAt = performance.now();
+    playAudio(promptItem.full_audio_url);
+    listeningPrompt.classList.add('playing');
+    pulseWaveform(listeningPrompt);
+  };
+  listeningPrompt.addEventListener('click', promptAudio);
+  listeningPrompt.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); promptAudio(); }
+  });
+  listeningChoices.forEach((choice, side) => {
+    const choose = () => {
+      const item = VOCAB[(activeIndex + side) % VOCAB.length];
+      playAudio(item.full_audio_url);
+      choice.classList.remove('correct', 'incorrect', 'selected');
+      const isCorrect = side === hearingPromptSide;
+      choice.classList.add(isCorrect ? 'correct' : 'incorrect', 'selected');
+      const latency = hearingPromptStartedAt ? performance.now() - hearingPromptStartedAt : 0;
+      if (hearingPromptStartedAt) hearingResults.push({ correct: isCorrect, latency });
+      const accuracy = hearingResults.length ? hearingResults.filter((result) => result.correct).length / hearingResults.length : 0;
+      setProgress(hearingFill, hearingIndicator, accuracy);
+      if (hearingSideFill) hearingSideFill.style.height = `${accuracy * 100}%`;
+      window.setTimeout(() => choice.classList.remove('correct', 'incorrect', 'selected'), 900);
+      hearingPromptStartedAt = 0;
+    };
+    choice.addEventListener('click', choose);
+    choice.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); choose(); }
+    });
+  });
+}
+
+function setProgress(fill, indicator, score) {
+  const percent = Math.max(0, Math.min(100, score * 100));
+  if (fill) fill.style.height = `${percent}%`;
+  if (indicator) indicator.style.bottom = `${percent}%`;
 }
 
 function attachPronunciationAndReviewListeners() {
@@ -787,7 +854,7 @@ function setupStageNav() {
     });
   });
 
-  const sections = ['vocab-stage', 'pronunciation-test', 'test-review-wrapper']
+  const sections = ['vocab-stage', 'listening-test', 'pronunciation-test', 'diagnostic-stage', 'test-review-wrapper']
     .map((id) => document.getElementById(id))
     .filter(Boolean);
 
@@ -795,7 +862,7 @@ function setupStageNav() {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.45) {
             stageNavDots.forEach((d) => {
               d.classList.toggle('active', d.dataset.target === entry.target.id);
             });
@@ -818,6 +885,7 @@ function init() {
   setActiveCategory('phoneme');
   updateActiveWordPronunciation();
   attachPronunciationAndReviewListeners();
+  setupListeningTest();
   setupStageNav();
 
   // 2. Fetch lesson_data.json asynchronously
