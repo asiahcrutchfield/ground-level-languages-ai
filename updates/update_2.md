@@ -20,10 +20,20 @@
 - Replaced previous phoneme extraction model (Wav2Vec2-eSpeak + MMS_FA) to Oxford IPA.
 
 ## What Worked
-
+- **Forced Alignment and Reference Audio:** The Colab pipeline now uses Torchaudio MMS_FA with the canonical word-to-phoneme lexicon, while the phoneme bank was updated to isolated reference WAVs. Librosa/SciPy syllable segmentation and TorchCREPE humming/pitch processing remain part of the offline asset workflow. Generated assets and lesson data support the five current words.
+- **Assessment Audio Bank:** Added `assessment_data.json` with listening and pronunciation entries for the five Level 0 words, plus five minimal-pair distractor WAVs and five mock-attempt WAVs under `audio/test_bank/`.
+- **Listening Interaction:** Wired the target prompt and randomized target/distractor choices into the assessment. A learner can preview either choice, switch selection, and submit with a separate check control. The three-trial round records correctness and response latency in page memory.
+- **Pronunciation and Review Prototype:** Added microphone capture with manual stop or a 3.5-second timeout, waveform comparison and replay controls, a visual result badge, and a two-word practice round that transitions into review.
+- **Guided Stage Flow:** Implemented the five-stage path—Vocabulary, Listening, Pronunciation, Review, Diagnostic—with stage dots, visual progress indicators, and a restart control. Shared audio playback stops the prior clip before starting another.
+- **Design Documentation:** Added the curriculum flow specification and expanded technical explanations to describe the browser runtime, offline notebook, and current assessment behavior.
 
 ## Needs Improvement
-
+- **L1 and Phoneme-Level Diagnosis Remains a Goal:** The current browser does not infer a learner's L1 phonetic filters, localize a pronunciation error to a specific phoneme, or calculate Goodness of Pronunciation. Pronunciation scoring is a coarse 28-peak waveform-envelope similarity proxy. The proposed Wav2Vec2/MMS_FA comparison of learner recordings and sub-word error localization are not implemented in the browser or Colab pipeline.
+- **Listening Telemetry Is Not Yet an Adaptive Diagnostic:** Correctness and response latency are held in memory only. Latency does not affect the displayed diagnostic, results are not persisted, and the app does not yet profile difficulty by phoneme or pitch contrast.
+- **Review Coverage Is Limited:** The current review layout compares the active word's attempt and target rather than presenting a complete history of all listening answers and both pronunciation attempts. Mock attempts can preview a waveform and badge, but they do not replace live microphone recordings to complete the guided pronunciation round.
+- **Story Curriculum Is Not Implemented Yet:** The Story Preview Carousel and audio-only animal-POV story arc remain planned. The current guided module is the five-word primer and its listening/pronunciation assessments.
+- **Navigation Can Bypass the Guided Unlocks:** Stage dots navigate directly to stages, so the three-word vocabulary unlock and linear assessment sequence are not enforced when dots are used.
+- **Current Merge Needs Integration:** As of 2026-11-24, the working tree contains unresolved conflicts in `index.html` and `style.css`, alongside staged changes to `script.js` and new listening/audio files. Resolve and verify these before treating those pending changes as part of the stable app.
 
 ## Task Divisions
 ### Moa

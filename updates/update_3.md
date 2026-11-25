@@ -3,7 +3,7 @@
 ***end date:** 2026-12-01*
 
 ## Core Objectives
-
+- Detail architecture of the AI models that are used.
 
 ## What Was Built
 
