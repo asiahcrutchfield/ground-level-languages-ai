@@ -70,6 +70,14 @@ There is **no live backend server, model API, learner account, or persistent sco
 - **TorchCREPE** estimates fundamental frequency (`F₀`) and voicing periodicity on lesson audio. The notebook uses these to synthesize humming tracks and classify simplified pitch movement. It does not analyze learner audio in the browser.
 - **SoundFile, NumPy, and PyTorch** support WAV I/O, numerical operations, and model execution in the notebook.
 
+### Stage Navigation & Flow Control (`.stage-nav`)
+
+The floating vertical navigation bar (`.stage-nav` in `index.html`) renders zero-text botanical dots (`.stage-nav-dot`) mapped via `data-target` attributes to individual stage IDs (`vocab-stage`, `listening-test`, `pronunciation-test`, `test-review-wrapper`, `diagnostic-stage`, plus `story-primer` and `story-stage` in Update #3).
+
+- **Direct-Jump Testing Override:** In `script.js`, `setupStageNav()` attaches click listeners to every `.stage-nav-dot` that call `goToStage(dot.dataset.target)` directly. Clicking a dot bypasses the guided lesson sequence and its unlock conditions (such as viewing 3 story preview cards or exploring 3 vocabulary words before advancing).
+- **Purpose:** Direct dot navigation is retained intentionally as a demo and QA affordance so presenters and developers can inspect any stage immediately without completing prior steps.
+- **State Fallbacks When Bypassing Stages:** If a user jumps directly to an assessment stage before exploring vocabulary items, `startListeningRound()` and `startPronunciationRound()` fall back to the default `VOCAB` array order (first 3 words for listening, first 2 for pronunciation) instead of `exploredWords`. Jumping directly to `#test-review-wrapper` without a live recording falls back to `mock_attempt_audio_url` from `assessment_data.json`, and `#diagnostic-stage` renders `0%` bars if `hearingResults` or `pronunciationScores` are empty.
+
 ### Listening Score and Response Time
 
 For each trial, the target option uses the lesson item's `full_audio_url`; the foil uses the distractor path from `assessment_data.json`. The choices are randomly placed left/right. A tap previews and selects an option; the separate check control submits it.
